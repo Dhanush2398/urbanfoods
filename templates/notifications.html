@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications | UrbanFoods</title>
+    <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/global.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <style>
+        body { background-color: var(--qb-light-gray); }
+        .dashboard-container { display: flex; min-height: calc(100vh - 76px); padding-top: 76px; }
+        .sidebar { width: 280px; background: var(--qb-white); border-right: 1px solid var(--qb-border); padding: 30px 20px; position: fixed; height: calc(100vh - 76px); overflow-y: auto; z-index: 100; transition: transform var(--qb-transition-fast); }
+        .main-content { flex-grow: 1; margin-left: 280px; padding: 40px; }
+        .sidebar-link { display: flex; align-items: center; padding: 12px 20px; color: var(--qb-text-muted); text-decoration: none; border-radius: var(--qb-radius-md); margin-bottom: 5px; font-weight: 600; transition: all var(--qb-transition-fast); }
+        .sidebar-link i { width: 24px; font-size: 1.1rem; margin-right: 10px; }
+        .sidebar-link:hover, .sidebar-link.active { background: var(--qb-orange-light); color: var(--qb-orange); }
+        @media (max-width: 991px) { .sidebar { transform: translateX(-100%); } .sidebar.show { transform: translateX(0); } .main-content { margin-left: 0; padding: 20px; } }
+        
+        .notification-card { background: var(--qb-white); border: 1px solid var(--qb-border); border-radius: var(--qb-radius-md); padding: 20px; display: flex; gap: 15px; margin-bottom: 15px; transition: all var(--qb-transition-fast); }
+        .notification-card.unread { background: var(--qb-orange-light); border-color: var(--qb-orange); }
+        .notification-icon { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg fixed-top bg-white shadow-sm py-3 border-bottom z-3">
+        <div class="container-fluid px-4">
+            <button class="btn btn-light d-lg-none me-3" type="button" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+            <a class="navbar-brand d-flex align-items-center fw-extrabold text-navy m-0" href="index.html">
+                <img src="assets/images/logo.svg" alt="UrbanFoods Logo" width="30" height="30" class="me-2"> UrbanFoods
+            </a>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar shadow-sm" id="sidebar">
+            <nav class="nav flex-column">
+                <a href="dashboard.html" class="sidebar-link"><i class="fa-solid fa-house"></i> Dashboard</a>
+                <a href="profile.html" class="sidebar-link"><i class="fa-solid fa-user"></i> My Profile</a>
+                <a href="orders.html" class="sidebar-link"><i class="fa-solid fa-clipboard-list"></i> Orders</a>
+                <a href="wishlist.html" class="sidebar-link"><i class="fa-solid fa-heart"></i> Favorites</a>
+                <a href="offers.html" class="sidebar-link"><i class="fa-solid fa-ticket"></i> Coupons</a>
+                <a href="notifications.html" class="sidebar-link active"><i class="fa-solid fa-bell"></i> Notifications</a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4 animate-fade-up">
+                <h2 class="fw-extrabold text-navy m-0">Notifications</h2>
+                <button class="btn btn-sm btn-outline-secondary">Mark all as read</button>
+            </div>
+
+            <div class="animate-fade-up delay-100">
+                <!-- Notification 1 (Unread) -->
+                <div class="notification-card unread">
+                    <div class="notification-icon bg-orange text-white"><i class="fa-solid fa-tag"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-1">50% Off on your next order!</h6>
+                        <p class="text-muted small mb-1">Use code QUICK50 at checkout to get 50% off up to $10 on your next order from The Gourmet Kitchen.</p>
+                        <small class="text-orange fw-bold">Just now</small>
+                    </div>
+                </div>
+
+                <!-- Notification 2 (Unread) -->
+                <div class="notification-card unread">
+                    <div class="notification-icon bg-success text-white"><i class="fa-solid fa-motorcycle"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Order Delivered Successfully</h6>
+                        <p class="text-muted small mb-1">Your order #QB-8945 has been delivered. Enjoy your meal and don't forget to rate your experience!</p>
+                        <small class="text-orange fw-bold">2 hours ago</small>
+                    </div>
+                </div>
+
+                <!-- Notification 3 -->
+                <div class="notification-card">
+                    <div class="notification-icon bg-secondary text-white"><i class="fa-solid fa-wallet"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-1">$10 added to your wallet</h6>
+                        <p class="text-muted small mb-1">Your friend John just signed up using your referral code. $10 has been credited to your UrbanFoods wallet.</p>
+                        <small class="text-muted">Yesterday</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script> document.getElementById('sidebarToggle').addEventListener('click', function() { document.getElementById('sidebar').classList.toggle('show'); }); </script>
+</body>
+</html>

@@ -1,0 +1,285 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UrbanFoods | Premium Food Delivery</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'assets/images/logo.svg' %}">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'assets/css/variables.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/global.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/components.css' %}">
+
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #fff0e5 0%, #ffffff 100%);
+            padding: 90px 0 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        @media (min-width: 992px) {
+            .hero-section {
+                padding: 100px 0 40px;
+            }
+        }
+        .hero-img-wrap {
+            position: relative;
+            z-index: 1;
+        }
+        .hero-blob {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 500px;
+            background: var(--qb-gradient-primary);
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.2;
+            z-index: 0;
+        }
+        .app-download-section {
+            background: var(--qb-bg-dark, #111827);
+            color: var(--qb-white);
+            border-radius: var(--qb-radius-xl);
+            padding: 60px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+        .app-mockup {
+            position: absolute;
+            right: 0;
+            bottom: -50px;
+            width: 400px;
+            transform: rotate(-10deg);
+        }
+        .section-padding {
+            padding: 30px 0;
+        }
+        @media (min-width: 992px) {
+            .section-padding {
+                padding: 50px 0;
+            }
+        }
+        .bg-light-orange {
+            background-color: var(--qb-orange-light);
+        }
+        
+        /* Stats Section */
+        .stat-card {
+            text-align: center;
+            padding: 30px;
+            background: var(--qb-white);
+            border-radius: var(--qb-radius-xl);
+            box-shadow: var(--qb-shadow-md);
+            transition: transform var(--qb-transition-bounce);
+        }
+        .stat-card:hover {
+            transform: translateY(-10px);
+        }
+        .stat-icon {
+            font-size: 3rem;
+            color: var(--qb-orange);
+            margin-bottom: 15px;
+        }
+        
+        /* FAQ Section */
+        .accordion-button:not(.collapsed) {
+            background-color: var(--qb-orange-light);
+            color: var(--qb-orange);
+            font-weight: bold;
+        }
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: rgba(0,0,0,.125);
+        }
+
+        /* Features Section */
+        .feature-icon-box {
+            width: 60px;
+            height: 60px;
+            background: var(--qb-orange-light);
+            color: var(--qb-orange);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            transition: all var(--qb-transition-fast);
+        }
+        .feature-card:hover .feature-icon-box {
+            background: var(--qb-orange);
+            color: var(--qb-white);
+            transform: scale(1.1);
+        }
+
+        /* Newsletter */
+        .newsletter-section {
+            background: linear-gradient(135deg, var(--qb-orange) 0%, #FF8C3A 100%);
+            border-radius: var(--qb-radius-xl);
+            padding: 60px 40px;
+            color: white;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Premium Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top bg-white shadow-sm py-3 transition-normal">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center fw-extrabold text-navy" href="{% url 'base:home' %}">
+                <img src="{% static 'assets/images/logo.svg' %}" alt="UrbanFoods Logo" width="40" height="40" class="me-2">
+                UrbanFoods
+            </a>
+            
+            <div class="d-none d-lg-flex align-items-center ms-4 bg-light rounded-pill px-3 py-2 cursor-pointer border hover-shadow-sm transition-fast">
+                <i class="fa-solid fa-location-dot text-orange me-2"></i>
+                <span class="text-truncate" style="max-width: 150px; font-size: 0.9rem;">Malleswaram, MH</span>
+                <i class="fa-solid fa-chevron-down ms-2 text-muted small"></i>
+            </div>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav ms-auto align-items-lg-center fw-semibold mt-3 mt-lg-0">
+                    <li class="nav-item"><a class="nav-link px-3 text-orange" href="{% url 'base:home' %}">Home</a></li>
+                   <li class="nav-item"><a class="nav-link px-3" href="{% url 'base:restaurants' %}">Restaurants</a></li>
+                    <li class="nav-item"><a class="nav-link px-3" href="offers.html"><i class="fa-solid fa-tag text-orange me-1"></i>Offers</a></li>
+     {% if user.is_authenticated %}
+  {% if user.is_staff %}
+  <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+    <a class="btn btn-outline-qb rounded-pill px-4" href="{% url 'base:dashboard' %}">
+      <i class="fa-solid fa-gauge me-1"></i> Dashboard
+    </a>
+  </li>
+  {% endif %}
+  <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+    <a class="btn btn-outline-qb rounded-pill px-4" href="#">
+      <i class="fa-regular fa-user me-1"></i> Profile
+    </a>
+  </li>
+  <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+    <a class="btn btn-primary-qb rounded-pill px-4" href="{% url 'base:logout' %}">Log Out</a>
+  </li>
+{% else %}
+  <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+    <a class="btn btn-outline-qb rounded-pill px-4" href="{% url 'base:login' %}">Sign In</a>
+  </li>
+{% endif %}
+                    <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+                        <a class="nav-link position-relative px-3" href="cart.html">
+                            <i class="fa-solid fa-cart-shopping fs-5"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-orange" style="margin-left: -10px; margin-top: 5px;">3</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+     {% block content %}{% endblock %}
+
+    <!-- Mega Footer -->
+    <footer class="bg-navy text-white pt-5 pb-3 mt-4">
+        <div class="container pt-4">
+            <div class="row gy-4 mb-4">
+                <div class="col-lg-3 col-md-6">
+                    <a class="navbar-brand d-flex align-items-center fw-extrabold text-white mb-3" href="index.html">
+                        <img src="{% static 'assets/images/logo.svg' %}" alt="UrbanFoods Logo" width="40" height="40" class="me-2 filter-white">
+                        UrbanFoods
+                    </a>
+                    <p class="text-white-50 mb-3 small">Delivering happiness to your doorstep. Experience the best food from top-rated restaurants with our lightning-fast delivery.</p>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-white-50 text-hover-orange fs-5 transition-fast"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#" class="text-white-50 text-hover-orange fs-5 transition-fast"><i class="fa-brands fa-twitter"></i></a>
+                        <a href="#" class="text-white-50 text-hover-orange fs-5 transition-fast"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="text-white-50 text-hover-orange fs-5 transition-fast"><i class="fa-brands fa-linkedin"></i></a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 col-md-6 col-6">
+                    <h6 class="fw-bold mb-3 text-uppercase tracking-wider text-white-50">Company</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 small">
+                        <li><a href="about.html" class="text-white text-decoration-none text-hover-orange">About Us</a></li>
+                        <li><a href="#" class="text-white text-decoration-none text-hover-orange">Careers</a></li>
+                        <li><a href="#" class="text-white text-decoration-none text-hover-orange">Blog</a></li>
+                        <li><a href="#" class="text-white text-decoration-none text-hover-orange">Press</a></li>
+                        <li><a href="#" class="text-white text-decoration-none text-hover-orange">Investor Relations</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-2 col-md-6 col-6">
+                    <h6 class="fw-bold mb-3 text-uppercase tracking-wider text-white-50">Help & Support</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 small">
+                        <li><a href="#" class="text-white text-decoration-none text-hover-orange">Help Center</a></li>
+                        <li><a href="contact.html" class="text-white text-decoration-none text-hover-orange">Contact Us</a></li>
+                        <li><a href="#" class="text-white text-decoration-none text-hover-orange">Partner with us</a></li>
+                        <li><a href="#" class="text-white text-decoration-none text-hover-orange">Ride with us</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-2 col-md-6 col-6">
+                    <h6 class="fw-bold mb-3 text-uppercase tracking-wider text-white-50">Legal</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 small">
+                        <li><a href="#" class="text-white text-decoration-none text-hover-orange">Terms & Conditions</a></li>
+                        <li><a href="#" class="text-white text-decoration-none text-hover-orange">Refund Policy</a></li>
+                        <li><a href="#" class="text-white text-decoration-none text-hover-orange">Privacy Policy</a></li>
+                        <li><a href="#" class="text-white text-decoration-none text-hover-orange">Cookie Policy</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="fw-bold mb-3 text-uppercase tracking-wider text-white-50">Popular Cities</h6>
+                    <ul class="list-unstyled d-flex flex-wrap gap-2 small">
+                        <li><a href="#" class="text-white text-decoration-none text-hover-orange pe-2 border-end border-secondary">Malleswaram</a></li>
+                        <li><a href="#" class="text-white text-decoration-none text-hover-orange pe-2 border-end border-secondary">Basavanagudi</a></li>
+                        <li><a href="#" class="text-white text-decoration-none text-hover-orange pe-2 border-end border-secondary">Bangalore</a></li>
+                        <li><a href="#" class="text-white text-decoration-none text-hover-orange pe-2 border-end border-secondary">Hyderabad</a></li>
+                        <li><a href="#" class="text-white text-decoration-none text-hover-orange pe-2 border-end border-secondary">Pune</a></li>
+                        <li><a href="#" class="text-white text-decoration-none text-hover-orange">Chennai</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <hr class="border-secondary mb-4">
+            
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    <p class="text-white-50 mb-0 small">&copy; 2026 UrbanFoods Technologies. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" height="20" class="me-2 opacity-50" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1601050690597-df0568f70950?q=80&w=400&h=400&fit=crop';">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" height="20" class="me-2 opacity-50">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" height="15" class="opacity-50">
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="{% static 'assets/js/main.js' %}"></script>
+    <script src="{% static 'assets/js/homepage-content.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+
+<div class="content-body">
+
+    <div class="container-fluid">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+
+            <div>
+                <h3 class="mb-1">Delivery Partner Requests</h3>
+                <p class="text-muted mb-0">
+                    Review delivery partner documents and applications.
+                </p>
+            </div>
+
+            <a href="{% url 'base:delivery_list' %}"
+               class="btn btn-primary">
+                <i class="fas fa-users me-1"></i>
+                All Delivery Partners
+            </a>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-header">
+                <h4 class="card-title mb-0">
+                    Pending Applications
+                </h4>
+            </div>
+
+            <div class="card-body">
+
+                {% if delivery_partners %}
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover">
+
+                        <thead>
+                            <tr>
+                                <th>Partner</th>
+                                <th>Phone</th>
+                                <th>City</th>
+                                <th>Vehicle</th>
+                                <th>Submitted</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                        {% for partner in delivery_partners %}
+
+                        <tr>
+
+                            <td>
+                                <div class="d-flex align-items-center">
+
+                                    {% if partner.photo %}
+
+                                    <img
+                                        src="{{ partner.photo.url }}"
+                                        width="45"
+                                        height="45"
+                                        class="rounded-circle me-2"
+                                        style="object-fit:cover;"
+                                    >
+
+                                    {% else %}
+
+                                    <div
+                                        class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2"
+                                        style="width:45px;height:45px;"
+                                    >
+                                        <i class="fas fa-user text-muted"></i>
+                                    </div>
+
+                                    {% endif %}
+
+                                    <div>
+                                        <strong>
+                                            {{ partner.user.get_full_name|default:partner.user.username }}
+                                        </strong>
+                                    </div>
+
+                                </div>
+                            </td>
+
+
+                            <td>
+                                {{ partner.user.username }}
+                            </td>
+
+
+                            <td>
+                                {{ partner.city }}
+                            </td>
+
+
+                            <td>
+                                {{ partner.get_vehicle_type_display }}
+                            </td>
+
+
+                            <td>
+                                {% if partner.submitted_at %}
+                                    {{ partner.submitted_at|date:"d M Y, h:i A" }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+
+
+                            <td>
+                                <span class="badge bg-warning">
+                                    Pending
+                                </span>
+                            </td>
+
+
+                            <td>
+
+                                <a
+                                    href="{% url 'base:delivery_detail' partner.pk %}"
+                                    class="btn btn-sm btn-primary"
+                                >
+                                    <i class="fas fa-eye"></i>
+                                    Review
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                {% else %}
+
+                <div class="text-center py-5">
+
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+
+                    <h4>No Pending Applications</h4>
+
+                    <p class="text-muted mb-0">
+                        There are no delivery partner applications waiting for approval.
+                    </p>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

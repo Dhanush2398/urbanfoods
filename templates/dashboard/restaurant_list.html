@@ -1,0 +1,76 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+<div class="content-body">
+  <div class="container-fluid">
+
+    <div class="card">
+      <div class="card-header border-0 d-flex justify-content-between flex-wrap gap-2">
+        <h4 class="fs-20 mb-0">Restaurant List ({{ profiles|length }})</h4>
+        <div class="d-flex gap-2">
+          <form method="get" class="d-flex gap-2">
+            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+              <option value="">All statuses</option>
+              {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </form>
+          <a href="{% url 'base:dashboard' %}" class="btn btn-outline-primary btn-sm">Back to Dashboard</a>
+        </div>
+      </div>
+
+      <div class="card-body pt-0 table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>#</th><th>Restaurant</th><th>Owner</th><th>Phone</th><th>Email</th>
+              <th>City</th><th>Status</th><th>Registered</th><th>Documents</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for p in profiles %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  {% if p.image %}
+                    <img src="{{ p.image.url }}" alt="{{ p.restaurant_name }}" width="50" height="50" class="rounded" style="object-fit:cover">
+                  {% else %}
+                    <div class="rounded bg-light d-flex align-items-center justify-content-center text-muted" style="width:50px;height:50px"><i class="fas fa-store"></i></div>
+                  {% endif %}
+                  <div>{{ p.restaurant_name }}<br><small class="text-muted">{{ p.address }}</small></div>
+                </div>
+              </td>
+              <td>{{ p.user.get_full_name }}</td>
+              <td>{{ p.user.username }}</td>
+              <td>{{ p.user.email }}</td>
+              <td>{{ p.city }}</td>
+              <td>
+                <span class="badge
+                  {% if p.status == 'approved' %}bg-success
+                  {% elif p.status == 'pending' %}bg-warning text-dark
+                  {% elif p.status == 'rejected' %}bg-danger
+                  {% else %}bg-secondary{% endif %}">{{ p.get_status_display }}</span>
+              </td>
+              <td>{{ p.created_at|date:"d M Y" }}</td>
+              <td>
+                {% if p.fssai_certificate %}<a href="{{ p.fssai_certificate.url }}" target="_blank">FSSAI</a>{% endif %}
+                {% if p.pan_card %} | <a href="{{ p.pan_card.url }}" target="_blank">PAN</a>{% endif %}
+                {% if p.gst_certificate %} | <a href="{{ p.gst_certificate.url }}" target="_blank">GST</a>{% endif %}
+                {% if not p.fssai_certificate and not p.pan_card %}<span class="text-muted">Not uploaded</span>{% endif %}
+              </td>
+              <td>
+                <a href="{% url 'base:restaurant_detail' p.pk %}" class="btn btn-primary btn-sm">View</a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="10" class="text-center text-muted">No restaurants found</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

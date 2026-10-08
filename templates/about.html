@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us | UrbanFoods</title>
+    <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/global.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <style>
+        .about-hero { background: var(--qb-navy); color: white; padding: 100px 0 80px; text-align: center; }
+        .stat-box { background: var(--qb-white); border-radius: var(--qb-radius-lg); padding: 30px; box-shadow: var(--qb-shadow-sm); text-align: center; border: 1px solid var(--qb-border); }
+        .team-img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 4px solid var(--qb-orange-light); }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg fixed-top bg-white shadow-sm py-3 transition-normal">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center fw-extrabold text-navy" href="index.html">
+                <img src="assets/images/logo.svg" alt="UrbanFoods Logo" width="40" height="40" class="me-2"> UrbanFoods
+            </a>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav ms-auto align-items-lg-center fw-semibold">
+                    <li class="nav-item"><a class="nav-link px-3" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link px-3" href="about.html">About</a></li>
+                    <li class="nav-item"><a class="nav-link px-3" href="contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main style="padding-top: 76px;">
+        <div class="about-hero animate-fade-up">
+            <div class="container">
+                <h1 class="display-3 fw-extrabold mb-4">Redefining Food Delivery</h1>
+                <p class="lead text-white-50 mx-auto" style="max-width: 700px;">UrbanFoods was born out of a simple idea: bringing the best food from local restaurants to your door, fast and fresh. We believe that good food brings people together.</p>
+            </div>
+        </div>
+
+        <div class="container py-5">
+            <div class="row align-items-center mb-5 pb-5 animate-fade-up delay-100">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <img src="https://instamart-media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,h_600,w_600//InstamartAssets/idli_vada.webp" class="img-fluid rounded-4 shadow-lg" alt="Our Story" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1601050690597-df0568f70950?q=80&w=400&h=400&fit=crop';">
+                </div>
+                <div class="col-lg-5 offset-lg-1">
+                    <h6 class="text-orange fw-bold mb-2 text-uppercase tracking-wide">Our Story</h6>
+                    <h2 class="fw-extrabold text-navy mb-4">From a small garage to a global platform.</h2>
+                    <p class="text-muted mb-4">Founded in 2021, UrbanFoods started with just a handful of passionate foodies and tech enthusiasts. Today, we connect millions of hungry customers with tens of thousands of local restaurants.</p>
+                    <p class="text-muted">Our mission is to elevate the dining experience at home by offering unprecedented speed, reliability, and an easy-to-use platform that everyone loves.</p>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-5 pb-5 animate-fade-up delay-200">
+                <div class="col-md-4">
+                    <div class="stat-box">
+                        <h2 class="display-4 fw-extrabold text-orange mb-2">50K+</h2>
+                        <h6 class="fw-bold text-navy mb-0">Restaurant Partners</h6>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-box">
+                        <h2 class="display-4 fw-extrabold text-orange mb-2">10M+</h2>
+                        <h6 class="fw-bold text-navy mb-0">Happy Customers</h6>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-box">
+                        <h2 class="display-4 fw-extrabold text-orange mb-2">30m</h2>
+                        <h6 class="fw-bold text-navy mb-0">Average Delivery Time</h6>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mb-5 animate-fade-up delay-300">
+                <h6 class="text-orange fw-bold mb-2 text-uppercase tracking-wide">Leadership</h6>
+                <h2 class="fw-extrabold text-navy mb-5">Meet Our Team</h2>
+                <div class="row justify-content-center g-4">
+                    <div class="col-6 col-md-3">
+                        <img src="https://i.pravatar.cc/150?img=68" class="team-img shadow-sm" alt="CEO">
+                        <h6 class="fw-bold mb-0">Sarah Jenkins</h6>
+                        <small class="text-muted">CEO & Founder</small>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <img src="https://i.pravatar.cc/150?img=11" class="team-img shadow-sm" alt="CTO">
+                        <h6 class="fw-bold mb-0">David Chen</h6>
+                        <small class="text-muted">Chief Tech Officer</small>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <img src="https://i.pravatar.cc/150?img=47" class="team-img shadow-sm" alt="COO">
+                        <h6 class="fw-bold mb-0">Elena Rodriguez</h6>
+                        <small class="text-muted">Head of Operations</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

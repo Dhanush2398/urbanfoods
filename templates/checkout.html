@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout | UrbanFoods</title>
+    <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/global.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+
+    <style>
+        .checkout-box {
+            background: var(--qb-white);
+            border-radius: var(--qb-radius-lg);
+            padding: 30px;
+            box-shadow: var(--qb-shadow-sm);
+            border: 1px solid var(--qb-border);
+            margin-bottom: 25px;
+        }
+        .address-card {
+            border: 2px solid var(--qb-border);
+            border-radius: var(--qb-radius-md);
+            padding: 15px;
+            cursor: pointer;
+            transition: all var(--qb-transition-fast);
+        }
+        .address-card:hover {
+            border-color: var(--qb-orange-hover);
+            background-color: var(--qb-orange-light);
+        }
+        .address-card.selected {
+            border-color: var(--qb-orange);
+            background-color: var(--qb-orange-light);
+            box-shadow: var(--qb-shadow-glow);
+        }
+        .payment-method {
+            border: 1px solid var(--qb-border);
+            border-radius: var(--qb-radius-md);
+            padding: 15px;
+            cursor: pointer;
+            transition: all var(--qb-transition-fast);
+        }
+        .payment-method:hover {
+            background-color: var(--qb-light-gray);
+        }
+        .form-check-input:checked {
+            background-color: var(--qb-orange);
+            border-color: var(--qb-orange);
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <!-- Navbar Minimal for Checkout -->
+    <nav class="navbar navbar-expand-lg bg-white shadow-sm py-3 transition-normal">
+        <div class="container d-flex justify-content-between">
+            <a class="navbar-brand d-flex align-items-center fw-extrabold text-navy" href="index.html">
+                <img src="assets/images/logo.svg" alt="UrbanFoods Logo" width="40" height="40" class="me-2">
+                UrbanFoods
+            </a>
+            <div class="fw-semibold text-muted">
+                <i class="fa-solid fa-lock text-success me-1"></i> Secure Checkout
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="py-5">
+        <div class="container">
+            <div class="row">
+                
+                <!-- Left Column (Address & Payment) -->
+                <div class="col-lg-8 animate-fade-up">
+                    <div class="d-flex align-items-center mb-4">
+                        <a href="cart.html" class="text-navy text-decoration-none me-3"><i class="fa-solid fa-arrow-left"></i></a>
+                        <h2 class="fw-extrabold text-navy mb-0">Checkout</h2>
+                    </div>
+
+                    <!-- Delivery Address -->
+                    <div class="checkout-box">
+                        <h4 class="fw-bold mb-4">Delivery Address</h4>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="address-card selected h-100 position-relative">
+                                    <div class="position-absolute top-0 end-0 p-2 text-orange">
+                                        <i class="fa-solid fa-circle-check fs-5"></i>
+                                    </div>
+                                    <h6 class="fw-bold"><i class="fa-solid fa-house text-orange me-2"></i> Home</h6>
+                                    <p class="text-muted small mb-0">Rahul Sharma<br>42 MG Road, Apt 3A<br>Bengaluru, KA 560001<br>+91 98765 43210</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="address-card h-100">
+                                    <h6 class="fw-bold"><i class="fa-solid fa-building text-navy me-2"></i> Office</h6>
+                                    <p class="text-muted small mb-0">Rahul Sharma<br>Tower B, Cyber City<br>Gurugram, HR 122001<br>+91 98765 99999</p>
+                                </div>
+                            </div>
+                            <div class="col-12 mt-3">
+                                <button class="btn btn-outline-qb w-100 text-center border-dashed py-3"><i class="fa-solid fa-plus me-2"></i> Add New Address</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="checkout-box delay-100">
+                        <h4 class="fw-bold mb-4">Payment Method</h4>
+                        
+                        <div class="payment-method d-flex align-items-center mb-3">
+                            <input class="form-check-input fs-5 me-3" type="radio" name="payment" id="pay-card" checked>
+                            <label class="form-check-label flex-grow-1 cursor-pointer d-flex align-items-center" for="pay-card">
+                                <div>
+                                    <h6 class="fw-bold mb-0">Credit / Debit Card</h6>
+                                    <small class="text-muted">Visa, Mastercard, Rupay</small>
+                                </div>
+                                <div class="ms-auto fs-3 text-navy">
+                                    <i class="fa-brands fa-cc-visa"></i>
+                                    <i class="fa-brands fa-cc-mastercard mx-1"></i>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <!-- Card Details Form (Simplified) -->
+                        <div class="bg-light p-3 rounded-3 mb-3 border">
+                            <div class="row g-2">
+                                <div class="col-12">
+                                    <input type="text" class="form-control form-control-qb" placeholder="Card Number">
+                                </div>
+                                <div class="col-6">
+                                    <input type="text" class="form-control form-control-qb" placeholder="MM/YY">
+                                </div>
+                                <div class="col-6">
+                                    <input type="text" class="form-control form-control-qb" placeholder="CVV">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="payment-method d-flex align-items-center mb-3">
+                            <input class="form-check-input fs-5 me-3" type="radio" name="payment" id="pay-upi">
+                            <label class="form-check-label flex-grow-1 cursor-pointer d-flex align-items-center" for="pay-upi">
+                                <div>
+                                    <h6 class="fw-bold mb-0">UPI / Wallet</h6>
+                                    <small class="text-muted">Pay via Google Pay, PhonePe, Paytm</small>
+                                </div>
+                                <div class="ms-auto fs-3 text-navy">
+                                    <i class="fa-brands fa-google-pay me-2"></i>
+                                    <i class="fa-brands fa-apple-pay"></i>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="payment-method d-flex align-items-center">
+                            <input class="form-check-input fs-5 me-3" type="radio" name="payment" id="pay-cod">
+                            <label class="form-check-label flex-grow-1 cursor-pointer d-flex align-items-center" for="pay-cod">
+                                <div>
+                                    <h6 class="fw-bold mb-0">Cash on Delivery</h6>
+                                    <small class="text-muted">Pay in cash when order arrives</small>
+                                </div>
+                                <div class="ms-auto fs-4 text-orange">
+                                    <i class="fa-solid fa-money-bill-wave"></i>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column (Summary) -->
+                <div class="col-lg-4 animate-fade-up delay-200">
+                    <div class="summary-card" style="position: sticky; top: 30px;">
+                        <h5 class="fw-bold mb-4">Order Summary</h5>
+                        
+                        <!-- Small item list -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-navy fw-semibold">1x Chicken Meals</span>
+                                <span class="text-muted">&#8377;320</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-navy fw-semibold">1x Paneer Butter Masala</span>
+                                <span class="text-muted">&#8377;280</span>
+                            </div>
+                        </div>
+
+                        <hr class="text-muted">
+
+                        <!-- Breakdown -->
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Subtotal</span>
+                            <span class="fw-semibold">&#8377;600</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">GST (5%)</span>
+                            <span class="fw-semibold">&#8377;30</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Delivery Fee</span>
+                            <span class="fw-semibold">&#8377;30</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3 text-success">
+                            <span>Discount (PROMO10)</span>
+                            <span class="fw-semibold">-&#8377;60</span>
+                        </div>
+
+                        <hr class="text-muted">
+
+                        <!-- Total -->
+                        <div class="d-flex justify-content-between align-items-end mb-4">
+                            <div>
+                                <span class="d-block fw-bold text-navy fs-5">Total to Pay</span>
+                            </div>
+                            <span class="fw-extrabold text-orange fs-4">&#8377;600</span>
+                        </div>
+
+                        <!-- Mocked Success action -->
+                        <button class="btn btn-primary-qb w-100 btn-lg shadow-sm" data-bs-toggle="modal" data-bs-target="#successModal">Place Order (&#8377;600)</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Success Modal Mockup -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 border-radius-xl p-4 text-center">
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <div class="rounded-circle bg-success bg-opacity-10 d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="fa-solid fa-check text-success fs-1"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-extrabold text-navy mb-2">Order Placed!</h3>
+                    <p class="text-muted mb-4">Your order from <strong>Punjabi Tadka</strong> has been successfully placed and is being prepared.</p>
+                    <a href="order_tracking.html" class="btn btn-primary-qb w-100">Track Order</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

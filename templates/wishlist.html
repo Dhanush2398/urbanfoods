@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorites | UrbanFoods</title>
+    <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/global.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <style>
+        body { background-color: var(--qb-light-gray); }
+        .dashboard-container { display: flex; min-height: calc(100vh - 76px); padding-top: 76px; }
+        .sidebar { width: 280px; background: var(--qb-white); border-right: 1px solid var(--qb-border); padding: 30px 20px; position: fixed; height: calc(100vh - 76px); overflow-y: auto; z-index: 100; transition: transform var(--qb-transition-fast); }
+        .main-content { flex-grow: 1; margin-left: 280px; padding: 40px; }
+        .sidebar-link { display: flex; align-items: center; padding: 12px 20px; color: var(--qb-text-muted); text-decoration: none; border-radius: var(--qb-radius-md); margin-bottom: 5px; font-weight: 600; transition: all var(--qb-transition-fast); }
+        .sidebar-link i { width: 24px; font-size: 1.1rem; margin-right: 10px; }
+        .sidebar-link:hover, .sidebar-link.active { background: var(--qb-orange-light); color: var(--qb-orange); }
+        @media (max-width: 991px) { .sidebar { transform: translateX(-100%); } .sidebar.show { transform: translateX(0); } .main-content { margin-left: 0; padding: 20px; } }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg fixed-top bg-white shadow-sm py-3 border-bottom z-3">
+        <div class="container-fluid px-4">
+            <button class="btn btn-light d-lg-none me-3" type="button" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+            <a class="navbar-brand d-flex align-items-center fw-extrabold text-navy m-0" href="index.html">
+                <img src="assets/images/logo.svg" alt="UrbanFoods Logo" width="30" height="30" class="me-2"> UrbanFoods
+            </a>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar shadow-sm" id="sidebar">
+            <nav class="nav flex-column">
+                <a href="dashboard.html" class="sidebar-link"><i class="fa-solid fa-house"></i> Dashboard</a>
+                <a href="profile.html" class="sidebar-link"><i class="fa-solid fa-user"></i> My Profile</a>
+                <a href="orders.html" class="sidebar-link"><i class="fa-solid fa-clipboard-list"></i> Orders</a>
+                <a href="wishlist.html" class="sidebar-link active"><i class="fa-solid fa-heart"></i> Favorites</a>
+                <a href="offers.html" class="sidebar-link"><i class="fa-solid fa-ticket"></i> Coupons</a>
+                <a href="notifications.html" class="sidebar-link"><i class="fa-solid fa-bell"></i> Notifications</a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <h2 class="fw-extrabold text-navy mb-4 animate-fade-up">My Favorites</h2>
+
+            <div class="row g-4 animate-fade-up delay-100">
+                <!-- Restaurant Card 1 -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card card-qb h-100 position-relative">
+                        <button class="btn btn-light rounded-circle position-absolute top-0 end-0 m-2 text-danger shadow-sm" style="z-index: 10;"><i class="fa-solid fa-heart"></i></button>
+                        <img src="https://images.unsplash.com/photo-1543353071-873f17a7a088?q=80&w=800" class="card-img-top" alt="Restaurant" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800';">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold text-navy mb-1">The Gourmet Kitchen</h5>
+                            <p class="text-muted small mb-3">Italian, Idli, South Indian Snacks</p>
+                            <a href="restaurant_detail.html" class="btn btn-outline-qb w-100 btn-sm">Order Now</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Restaurant Card 2 -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card card-qb h-100 position-relative">
+                        <button class="btn btn-light rounded-circle position-absolute top-0 end-0 m-2 text-danger shadow-sm" style="z-index: 10;"><i class="fa-solid fa-heart"></i></button>
+                        <img src="https://images.unsplash.com/photo-1552566626-52f8b828a592?q=80&w=800" class="card-img-top" alt="Restaurant" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800';">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold text-navy mb-1">Thali Master</h5>
+                            <p class="text-muted small mb-3">Japanese, Thali, Asian</p>
+                            <a href="restaurant_detail.html" class="btn btn-outline-qb w-100 btn-sm">Order Now</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script> document.getElementById('sidebarToggle').addEventListener('click', function() { document.getElementById('sidebar').classList.toggle('show'); }); </script>
+</body>
+</html>

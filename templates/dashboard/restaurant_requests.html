@@ -1,0 +1,69 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+<div class="content-body">
+  <div class="container-fluid">
+
+    {% for m in messages %}
+    <div class="alert alert-{% if m.tags == 'error' %}danger{% else %}{{ m.tags }}{% endif %} py-2">{{ m }}</div>
+    {% endfor %}
+
+    <div class="card">
+      <div class="card-header border-0 d-flex justify-content-between">
+        <h4 class="fs-20 mb-0">Restaurant Documents</h4>
+        <a href="{% url 'base:dashboard' %}" class="btn btn-outline-primary btn-sm">Back to Dashboard</a>
+      </div>
+      <div class="card-body pt-0 table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Restaurant</th><th>Owner / Phone</th><th>City</th>
+              <th>Documents</th><th>Submitted</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for p in profiles %}
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  {% if p.image %}
+                    <a href="{{ p.image.url }}" target="_blank">
+                      <img src="{{ p.image.url }}" alt="{{ p.restaurant_name }}" width="60" height="60" class="rounded" style="object-fit:cover">
+                    </a>
+                  {% else %}
+                    <div class="rounded bg-light d-flex align-items-center justify-content-center text-muted" style="width:60px;height:60px"><i class="fas fa-store"></i></div>
+                  {% endif %}
+                  <div>
+                    {{ p.restaurant_name }}<br>
+                    <small class="text-muted">{{ p.address }}</small>
+                  </div>
+                </div>
+              </td>
+              <td>{{ p.user.get_full_name }}<br>{{ p.user.username }}</td>
+              <td>{{ p.city }}</td>
+              <td>
+                {% if p.image %}Image: <a href="{{ p.image.url }}" target="_blank">view</a><br>{% endif %}
+                FSSAI {{ p.fssai_number }}: <a href="{{ p.fssai_certificate.url }}" target="_blank">view</a><br>
+                PAN {{ p.pan_number }}: <a href="{{ p.pan_card.url }}" target="_blank">view</a>
+                {% if p.gst_certificate %}<br>GST {{ p.gst_number }}: <a href="{{ p.gst_certificate.url }}" target="_blank">view</a>{% endif %}
+              </td>
+              <td>{{ p.submitted_at|date:"d M Y, H:i" }}</td>
+              <td>
+                <form method="post" action="{% url 'base:restaurant_review' p.pk %}" class="d-flex gap-2">
+                  {% csrf_token %}
+                  <input name="reason" class="form-control form-control-sm" placeholder="Reason (if rejecting)">
+                  <button name="action" value="approve" class="btn btn-success btn-sm">Approve</button>
+                  <button name="action" value="reject" class="btn btn-danger btn-sm">Reject</button>
+                </form>
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="6" class="text-center text-muted">No pending requests</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

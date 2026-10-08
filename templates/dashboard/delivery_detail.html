@@ -1,0 +1,569 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+
+<div class="content-body">
+    <div class="container-fluid">
+
+        <!-- PAGE HEADER -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+
+            <div>
+                <h3 class="mb-1">Delivery Partner Details</h3>
+                <p class="text-muted mb-0">
+                    Verify submitted information and documents.
+                </p>
+            </div>
+
+            <a href="{% url 'base:delivery_requests' %}"
+               class="btn btn-light mt-2 mt-md-0">
+                <i class="fas fa-arrow-left me-1"></i>
+                Back
+            </a>
+
+        </div>
+
+
+        <div class="row">
+
+            <!-- ========================================= -->
+            <!-- LEFT SIDE - PROFILE -->
+            <!-- ========================================= -->
+
+            <div class="col-xl-4">
+
+                <!-- PROFILE CARD -->
+                <div class="card mb-4">
+
+                    <div class="card-body text-center">
+
+                        {% if profile.photo %}
+
+                            <img
+                                src="{{ profile.photo.url }}"
+                                alt="Delivery Partner"
+                                class="rounded-circle mb-3"
+                                width="120"
+                                height="120"
+                                style="object-fit: cover;"
+                            >
+
+                        {% else %}
+
+                            <div
+                                class="rounded-circle bg-light mx-auto mb-3 d-flex align-items-center justify-content-center"
+                                style="width:120px;height:120px;"
+                            >
+                                <i class="fas fa-user fa-4x text-muted"></i>
+                            </div>
+
+                        {% endif %}
+
+
+                        <h4 class="mb-2">
+                            {% if profile.user.get_full_name %}
+                                {{ profile.user.get_full_name }}
+                            {% else %}
+                                {{ profile.user.username }}
+                            {% endif %}
+                        </h4>
+
+                        <p class="text-muted mb-1">
+                            {{ profile.user.username }}
+                        </p>
+
+                        <p class="text-muted mb-3">
+                            {{ profile.city|default:"-" }}
+                        </p>
+
+
+                        <!-- STATUS -->
+
+                        {% if profile.status|lower == "pending" %}
+
+                            <span class="badge bg-warning text-dark px-3 py-2">
+                                Pending Verification
+                            </span>
+
+                        {% elif profile.status|lower == "approved" %}
+
+                            <span class="badge bg-success px-3 py-2">
+                                Approved
+                            </span>
+
+                        {% elif profile.status|lower == "rejected" %}
+
+                            <span class="badge bg-danger px-3 py-2">
+                                Rejected
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-secondary px-3 py-2">
+                                Incomplete
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- PARTNER INFORMATION -->
+
+                <div class="card">
+
+                    <div class="card-header">
+                        <h4 class="card-title mb-0">
+                            Partner Information
+                        </h4>
+                    </div>
+
+                    <div class="card-body">
+
+                        <!-- PHONE -->
+                        <div class="mb-3">
+                            <small class="text-muted d-block">
+                                Phone
+                            </small>
+
+                            <strong>
+                                {{ profile.user.username }}
+                            </strong>
+                        </div>
+
+
+                        <!-- NAME -->
+                        <div class="mb-3">
+                            <small class="text-muted d-block">
+                                Name
+                            </small>
+
+                            <strong>
+                                {% if profile.user.get_full_name %}
+                                    {{ profile.user.get_full_name }}
+                                {% else %}
+                                    {{ profile.user.username }}
+                                {% endif %}
+                            </strong>
+                        </div>
+
+
+                        <!-- CITY -->
+                        <div class="mb-3">
+                            <small class="text-muted d-block">
+                                City
+                            </small>
+
+                            <strong>
+                                {{ profile.city|default:"-" }}
+                            </strong>
+                        </div>
+
+
+                        <!-- VEHICLE -->
+                        <div class="mb-3">
+                            <small class="text-muted d-block">
+                                Vehicle
+                            </small>
+
+                            <strong>
+                                {{ profile.get_vehicle_type_display|default:"-" }}
+                            </strong>
+                        </div>
+
+
+                        <!-- VEHICLE NUMBER -->
+                        <div>
+                            <small class="text-muted d-block">
+                                Vehicle Number
+                            </small>
+
+                            <strong>
+                                {{ profile.vehicle_number|default:"-" }}
+                            </strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- RIGHT SIDE - DOCUMENTS -->
+            <!-- ========================================= -->
+
+            <div class="col-xl-8">
+
+                <div class="card">
+
+                    <div class="card-header">
+                        <h4 class="card-title mb-0">
+                            Submitted Documents
+                        </h4>
+                    </div>
+
+
+                    <div class="card-body">
+
+
+                        <!-- ================================= -->
+                        <!-- DRIVING LICENSE -->
+                        <!-- ================================= -->
+
+                        <div class="border rounded p-3 mb-3">
+
+                            <div class="d-flex justify-content-between align-items-center">
+
+                                <div>
+                                    <h5 class="mb-1">
+                                        Driving License
+                                    </h5>
+
+                                    <small class="text-muted">
+                                        {{ profile.driving_license_number|default:"Not provided" }}
+                                    </small>
+                                </div>
+
+
+                                {% if profile.driving_license %}
+
+                                    <a
+                                        href="{{ profile.driving_license.url }}"
+                                        target="_blank"
+                                        class="btn btn-sm btn-primary"
+                                    >
+                                        <i class="fas fa-eye me-1"></i>
+                                        View
+                                    </a>
+
+                                {% else %}
+
+                                    <span class="badge bg-danger">
+                                        Not Uploaded
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================= -->
+                        <!-- RC BOOK -->
+                        <!-- ================================= -->
+
+                        <div class="border rounded p-3 mb-3">
+
+                            <div class="d-flex justify-content-between align-items-center">
+
+                                <div>
+                                    <h5 class="mb-1">
+                                        RC Book
+                                    </h5>
+
+                                    <small class="text-muted">
+                                        Vehicle:
+                                        {{ profile.vehicle_number|default:"Not provided" }}
+                                    </small>
+                                </div>
+
+
+                                {% if profile.rc_book %}
+
+                                    <a
+                                        href="{{ profile.rc_book.url }}"
+                                        target="_blank"
+                                        class="btn btn-sm btn-primary"
+                                    >
+                                        <i class="fas fa-eye me-1"></i>
+                                        View
+                                    </a>
+
+                                {% else %}
+
+                                    <span class="badge bg-danger">
+                                        Not Uploaded
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================= -->
+                        <!-- PROFILE PHOTO -->
+                        <!-- ================================= -->
+
+                        <div class="border rounded p-3 mb-3">
+
+                            <div class="d-flex justify-content-between align-items-center">
+
+                                <div>
+                                    <h5 class="mb-1">
+                                        Profile Photo
+                                    </h5>
+
+                                    <small class="text-muted">
+                                        Delivery partner photo
+                                    </small>
+                                </div>
+
+
+                                {% if profile.photo %}
+
+                                    <a
+                                        href="{{ profile.photo.url }}"
+                                        target="_blank"
+                                        class="btn btn-sm btn-primary"
+                                    >
+                                        <i class="fas fa-eye me-1"></i>
+                                        View
+                                    </a>
+
+                                {% else %}
+
+                                    <span class="badge bg-danger">
+                                        Not Uploaded
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- ========================================= -->
+                        <!-- APPLICATION DECISION -->
+                        <!-- ========================================= -->
+
+                        {% if profile.status|lower == "pending" %}
+
+                            <hr class="my-4">
+
+                            <div class="mb-4">
+
+                                <h4 class="mb-1">
+                                    Application Decision
+                                </h4>
+
+                                <p class="text-muted mb-0">
+                                    Review the submitted documents and approve
+                                    or reject this delivery partner.
+                                </p>
+
+                            </div>
+
+
+                            <!-- ============================== -->
+                            <!-- APPROVE -->
+                            <!-- ============================== -->
+
+                            <form
+                                method="post"
+                                action="{% url 'base:delivery_review' profile.pk %}"
+                                class="mb-3"
+                            >
+
+                                {% csrf_token %}
+
+                                <input
+                                    type="hidden"
+                                    name="action"
+                                    value="approve"
+                                >
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-success w-100 py-3"
+                                    onclick="return confirm('Are you sure you want to approve this delivery partner?')"
+                                >
+                                    <i class="fas fa-check me-1"></i>
+                                    Approve Delivery Partner
+                                </button>
+
+                            </form>
+
+
+                            <!-- ============================== -->
+                            <!-- REJECT -->
+                            <!-- ============================== -->
+
+                            <form
+                                method="post"
+                                action="{% url 'base:delivery_review' profile.pk %}"
+                            >
+
+                                {% csrf_token %}
+
+                                <input
+                                    type="hidden"
+                                    name="action"
+                                    value="reject"
+                                >
+
+
+                                <div class="mb-3">
+
+                                    <label class="form-label fw-semibold">
+                                        Rejection Reason
+                                    </label>
+
+                                    <textarea
+                                        name="rejection_reason"
+                                        class="form-control"
+                                        rows="4"
+                                        placeholder="Enter reason for rejection..."
+                                        required
+                                    ></textarea>
+
+                                </div>
+
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-danger w-100 py-3"
+                                    onclick="return confirm('Are you sure you want to reject this application?')"
+                                >
+                                    <i class="fas fa-times me-1"></i>
+                                    Reject Application
+                                </button>
+
+                            </form>
+
+
+                        {% endif %}
+
+
+
+                        <!-- ========================================= -->
+                        <!-- APPROVED MESSAGE -->
+                        <!-- ========================================= -->
+
+                        {% if profile.status|lower == "approved" %}
+
+                            <hr class="my-4">
+
+                            <div class="alert alert-success">
+
+                                <div class="d-flex align-items-center">
+
+                                    <i class="fas fa-check-circle fa-2x me-3"></i>
+
+                                    <div>
+                                        <strong>
+                                            Delivery Partner Approved
+                                        </strong>
+
+                                        <div class="small mt-1">
+                                            This delivery partner has been approved
+                                            and can access the delivery dashboard.
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+
+
+                        <!-- ========================================= -->
+                        <!-- REJECTED MESSAGE -->
+                        <!-- ========================================= -->
+
+                        {% if profile.status|lower == "rejected" %}
+
+                            <hr class="my-4">
+
+                            <div class="alert alert-danger">
+
+                                <div class="d-flex align-items-start">
+
+                                    <i class="fas fa-times-circle fa-2x me-3"></i>
+
+                                    <div>
+
+                                        <strong>
+                                            Application Rejected
+                                        </strong>
+
+                                        {% if profile.rejection_reason %}
+
+                                            <div class="mt-2">
+                                                <strong>
+                                                    Rejection Reason:
+                                                </strong>
+                                            </div>
+
+                                            <div class="mt-1">
+                                                {{ profile.rejection_reason }}
+                                            </div>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+
+
+                        <!-- ========================================= -->
+                        <!-- INCOMPLETE MESSAGE -->
+                        <!-- ========================================= -->
+
+                        {% if profile.status|lower == "incomplete" %}
+
+                            <hr class="my-4">
+
+                            <div class="alert alert-warning">
+
+                                <div class="d-flex align-items-start">
+
+                                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+
+                                    <div>
+
+                                        <strong>
+                                            Application Incomplete
+                                        </strong>
+
+                                        <div class="small mt-1">
+                                            The delivery partner has not completed
+                                            the required document submission.
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

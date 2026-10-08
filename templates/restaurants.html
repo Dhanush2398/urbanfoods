@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<style>
+    .filter-sidebar { background: var(--qb-white); border-radius: var(--qb-radius-md); padding: 20px; box-shadow: var(--qb-shadow-sm); position: sticky; top: 100px; }
+    .form-check-input:checked { background-color: var(--qb-orange); border-color: var(--qb-orange); }
+</style>
+
+<main style="padding-top: 100px; padding-bottom: 60px;">
+  <div class="container">
+    <nav aria-label="breadcrumb" class="mb-4">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'base:home' %}" class="text-muted text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Restaurants</li>
+      </ol>
+    </nav>
+
+    <form method="get">
+      <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+          <h2 class="fw-bold text-navy mb-0">Delivery Restaurants</h2>
+          <p class="text-muted mt-1 mb-0">{{ page_obj.paginator.count }} restaurant{{ page_obj.paginator.count|pluralize }} found</p>
+        </div>
+        <div class="col-md-6 d-flex justify-content-md-end mt-3 mt-md-0 gap-3">
+          <div class="search-bar-glass shadow-sm p-1 border">
+            <i class="fa-solid fa-search text-muted ms-2"></i>
+            <input type="text" name="q" value="{{ q }}" class="form-control border-0 bg-transparent shadow-none" placeholder="Search restaurant, city or dish...">
+          </div>
+          <select name="sort" class="form-select w-auto shadow-none" onchange="this.form.submit()">
+            <option value="new" {% if sort == "new" %}selected{% endif %}>Newest</option>
+            <option value="name" {% if sort == "name" %}selected{% endif %}>Name (A-Z)</option>
+            <option value="items" {% if sort == "items" %}selected{% endif %}>Most menu items</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-lg-3 mb-4 d-none d-lg-block">
+          <div class="filter-sidebar">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h5 class="fw-bold mb-0">Filters</h5>
+              <a href="{% url 'base:restaurants' %}" class="text-muted small text-decoration-none">Clear all</a>
+            </div>
+
+            <div class="mb-4">
+              <h6 class="fw-semibold mb-3">Cuisines</h6>
+              {% for value, checked in cuisine_options %}
+              <div class="form-check mb-2">
+                <input class="form-check-input shadow-none" type="checkbox" name="cuisine" value="{{ value }}" id="c{{ forloop.counter }}" {% if checked %}checked{% endif %}>
+                <label class="form-check-label text-muted" for="c{{ forloop.counter }}">{{ value }}</label>
+              </div>
+              {% endfor %}
+            </div>
+
+            <hr class="text-muted">
+
+            <div class="mb-3">
+              <h6 class="fw-semibold mb-3">Dietary</h6>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" name="veg" value="1" id="veg" {% if veg %}checked{% endif %}>
+                <label class="form-check-label" for="veg"><span class="badge-veg me-1"></span> Pure Veg</label>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary-qb w-100 rounded-pill">Apply</button>
+          </div>
+        </div>
+
+        <div class="col-lg-9">
+          <div class="row g-4">
+            {% for r in page_obj %}
+            <div class="col-md-6 col-xl-4 animate-fade-up">
+              <a href="{% url 'base:restaurant_public' r.pk %}" class="text-decoration-none">
+                <div class="card card-qb h-100">
+                  {% if r.image %}
+                    <img src="{{ r.image.url }}" class="card-img-top" alt="{{ r.restaurant_name }}" style="height:180px;object-fit:cover;">
+                  {% else %}
+                    <div class="bg-light d-flex align-items-center justify-content-center text-muted" style="height:180px;"><i class="fa-solid fa-store fa-2x"></i></div>
+                  {% endif %}
+                  <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                      <h5 class="card-title fw-bold text-navy text-truncate mb-0">{{ r.restaurant_name }}</h5>
+                      <span class="{% if r.nonveg_count == 0 %}badge-veg{% else %}badge-nonveg{% endif %}"></span>
+                    </div>
+                    <p class="text-muted small mb-3"><i class="fa-solid fa-location-dot text-orange me-1"></i>{{ r.city }}</p>
+                    <div class="pt-3 border-top text-muted small fw-semibold">
+                      <i class="fa-solid fa-utensils me-1"></i> {{ r.item_count }} item{{ r.item_count|pluralize }}
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+            {% empty %}
+            <p class="text-muted">No restaurants match your filters.</p>
+            {% endfor %}
+          </div>
+
+          {% if page_obj.paginator.num_pages > 1 %}
+          <nav class="mt-5 mb-3 d-flex justify-content-center">
+            <ul class="pagination">
+              {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link shadow-none text-navy" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a></li>
+              {% else %}
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+              {% endif %}
+              <li class="page-item active"><span class="page-link bg-orange border-orange text-white">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+              {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link shadow-none text-orange" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a></li>
+              {% else %}
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+              {% endif %}
+            </ul>
+          </nav>
+          {% endif %}
+        </div>
+      </div>
+    </form>
+  </div>
+</main>
+{% endblock %}

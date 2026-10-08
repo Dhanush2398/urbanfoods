@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section-padding bg-white">
+    <div class="container">
+
+        <a href="{% url 'base:home' %}" class="text-orange fw-semibold text-decoration-none d-inline-block mb-3">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to home
+        </a>
+
+        <div class="d-flex align-items-center gap-3 mb-4">
+            {% if r.image %}
+                <img src="{{ r.image.url }}" alt="{{ r.restaurant_name }}" class="rounded-4" style="width:110px;height:110px;object-fit:cover;">
+            {% endif %}
+            <div>
+                <h2 class="fw-bold mb-1">{{ r.restaurant_name }}</h2>
+                <p class="text-muted mb-0"><i class="fa-solid fa-location-dot text-orange me-1"></i>{{ r.address }}, {{ r.city }}</p>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-bold mb-0">{{ category }} items</h4>
+            <a href="{% url 'base:restaurant_public' r.pk %}" class="text-orange fw-semibold text-decoration-none">View full menu</a>
+        </div>
+
+        <div class="row g-4">
+            {% for i in items %}
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <a href="{% url 'base:menu_item_public' i.pk %}" class="text-decoration-none text-reset d-block h-100">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                        {% if i.image %}
+                            <img src="{{ i.image.url }}" alt="{{ i.name }}" style="height:180px;object-fit:cover;width:100%;">
+                        {% else %}
+                            <div class="bg-light d-flex align-items-center justify-content-center text-muted" style="height:180px;"><i class="fa-solid fa-utensils fa-2x"></i></div>
+                        {% endif %}
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h5 class="fw-bold mb-1">{{ i.name }}</h5>
+                                <span class="badge {% if i.is_veg %}bg-success{% else %}bg-danger{% endif %}">{% if i.is_veg %}Veg{% else %}Non-veg{% endif %}</span>
+                            </div>
+                            <p class="text-muted small mb-2">{{ i.description|truncatechars:60 }}</p>
+                            <span class="fw-bold text-orange">₹{{ i.price }}</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <p class="text-muted">No {{ category|lower }} items available right now.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

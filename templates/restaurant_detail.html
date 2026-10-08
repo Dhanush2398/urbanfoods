@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Gourmet Kitchen | UrbanFoods</title>
+    <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/global.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+
+    <style>
+        .restaurant-cover {
+            height: 350px;
+            object-fit: cover;
+            width: 100%;
+            border-radius: var(--qb-radius-xl);
+        }
+        .menu-category-nav {
+            position: sticky;
+            top: 80px;
+            z-index: 10;
+            background: var(--qb-white);
+            padding: 15px 0;
+            border-bottom: 1px solid var(--qb-border);
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .menu-category-nav .nav-link {
+            color: var(--qb-text-muted);
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            padding-bottom: 10px;
+        }
+        .menu-category-nav .nav-link.active {
+            color: var(--qb-orange);
+            border-bottom-color: var(--qb-orange);
+        }
+        .food-card {
+            border: 1px solid var(--qb-border);
+            border-radius: var(--qb-radius-lg);
+            padding: 15px;
+            transition: all var(--qb-transition-fast);
+            background: var(--qb-white);
+            display: flex;
+            gap: 15px;
+        }
+        .food-card:hover {
+            box-shadow: var(--qb-shadow-md);
+            border-color: var(--qb-orange);
+        }
+        .food-img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: var(--qb-radius-md);
+        }
+        .sticky-cart {
+            position: sticky;
+            top: 140px;
+            background: var(--qb-white);
+            border-radius: var(--qb-radius-lg);
+            box-shadow: var(--qb-shadow-md);
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top bg-white shadow-sm py-3 transition-normal">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center fw-extrabold text-navy" href="index.html">
+                <img src="assets/images/logo.svg" alt="UrbanFoods Logo" width="40" height="40" class="me-2">
+                UrbanFoods
+            </a>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav ms-auto align-items-lg-center fw-semibold">
+                    <li class="nav-item"><a class="nav-link px-3" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link px-3 text-orange" href="restaurants.html">Restaurants</a></li>
+                    <li class="nav-item"><a class="nav-link px-3" href="cart.html"><i class="fa-solid fa-cart-shopping fs-5"></i></a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main style="padding-top: 100px; padding-bottom: 60px;">
+        <div class="container">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="index.html" class="text-muted text-decoration-none">Home</a></li>
+                    <li class="breadcrumb-item"><a href="restaurants.html" class="text-muted text-decoration-none">Bengaluru</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">The Gourmet Kitchen</li>
+                </ol>
+            </nav>
+
+            <!-- Cover Image -->
+            <div class="position-relative mb-4">
+                <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=800" class="restaurant-cover shadow-sm animate-fade-up" alt="The Gourmet Kitchen" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800';">
+                <button class="btn btn-light rounded-circle position-absolute top-0 end-0 m-4 shadow-sm" style="width: 40px; height: 40px;"><i class="fa-regular fa-heart text-danger"></i></button>
+            </div>
+
+            <!-- Info Section -->
+            <div class="row mb-5 animate-fade-up delay-100">
+                <div class="col-md-8">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h1 class="fw-extrabold text-navy mb-0">The Gourmet Kitchen</h1>
+                        <div class="bg-success text-white px-3 py-1 rounded-pill fw-bold d-flex align-items-center">
+                            <i class="fa-solid fa-star me-1 small"></i> 4.8
+                        </div>
+                    </div>
+                    <p class="text-muted mb-3 fs-5">Italian, Idli, South Indian Snacks</p>
+                    
+                    <div class="d-flex gap-4 mb-3">
+                        <div class="d-flex align-items-center text-navy fw-semibold">
+                            <i class="fa-solid fa-clock text-orange me-2 fs-5"></i> 25-30 min
+                        </div>
+                        <div class="d-flex align-items-center text-navy fw-semibold">
+                            <i class="fa-solid fa-route text-orange me-2 fs-5"></i> 1.2 mi away
+                        </div>
+                        <div class="d-flex align-items-center text-navy fw-semibold">
+                            <i class="fa-solid fa-circle-info text-orange me-2 fs-5"></i> Open until 11 PM
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Menu & Details -->
+                <div class="col-lg-8">
+                    <!-- Sticky Menu Nav -->
+                    <div class="menu-category-nav mb-4">
+                        <nav class="nav">
+                            <a class="nav-link active" href="#recommended">Recommended</a>
+                            <a class="nav-link" href="#pizza">Idli</a>
+                            <a class="nav-link" href="#pasta">Vada</a>
+                            <a class="nav-link" href="#desserts">Traditional Sweets</a>
+                            <a class="nav-link" href="#beverages">Beverages</a>
+                        </nav>
+                    </div>
+
+                    <!-- Recommended Section -->
+                    <div id="recommended" class="mb-5 scroll-margin">
+                        <h4 class="fw-bold mb-4">Recommended</h4>
+                        <div class="d-flex flex-column gap-3">
+                            <!-- Food Item 1 -->
+                            <div class="food-card">
+                                <div class="flex-grow-1 pe-3">
+                                    <span class="badge-nonveg mb-2"></span>
+                                    <h5 class="fw-bold mb-1">Truffle Mushroom Idli <span class="badge bg-warning text-dark ms-2 small">Bestseller</span></h5>
+                                    <p class="fw-semibold text-navy mb-1">$18.50</p>
+                                    <p class="text-muted small mb-0">Wild mushrooms, truffle oil, mozzarella, parmesan, and a rich garlic cream sauce on a hand-tossed crust.</p>
+                                </div>
+                                <div class="position-relative text-center">
+                                    <img src="https://images.unsplash.com/photo-1601050690597-df0568f70950?q=80&w=600&h=600&fit=crop" class="food-img mb-2 shadow-sm" alt="Food" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1601050690597-df0568f70950?q=80&w=400&h=400&fit=crop';">
+                                    <button class="btn btn-primary-qb btn-sm w-100 fw-bold position-absolute start-50 translate-middle-x" style="bottom: -10px; width: 80% !important;">ADD +</button>
+                                </div>
+                            </div>
+                            <!-- Food Item 2 -->
+                            <div class="food-card">
+                                <div class="flex-grow-1 pe-3">
+                                    <span class="badge-veg mb-2"></span>
+                                    <h5 class="fw-bold mb-1">Classic Margherita</h5>
+                                    <p class="fw-semibold text-navy mb-1">$14.00 <span class="text-muted text-decoration-line-through small ms-2">$16.00</span></p>
+                                    <p class="text-muted small mb-0">Fresh tomatoes, basil, fresh mozzarella, and our signature tomato sauce.</p>
+                                </div>
+                                <div class="position-relative text-center">
+                                    <img src="https://instamart-media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,h_600,w_600//InstamartAssets/idli_vada.webp" class="food-img mb-2 shadow-sm" alt="Food" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1601050690597-df0568f70950?q=80&w=400&h=400&fit=crop';">
+                                    <button class="btn btn-outline-qb btn-sm w-100 fw-bold position-absolute start-50 translate-middle-x bg-white" style="bottom: -10px; width: 80% !important;">ADD +</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vada Section -->
+                    <div id="pasta" class="mb-5 scroll-margin">
+                        <h4 class="fw-bold mb-4">Vada</h4>
+                        <div class="d-flex flex-column gap-3">
+                            <div class="food-card">
+                                <div class="flex-grow-1 pe-3">
+                                    <span class="badge-nonveg mb-2"></span>
+                                    <h5 class="fw-bold mb-1">Creamy Fettuccine Alfredo</h5>
+                                    <p class="fw-semibold text-navy mb-1">$16.50</p>
+                                    <p class="text-muted small mb-0">Fettuccine pasta tossed in a rich, creamy parmesan sauce with grilled chicken.</p>
+                                </div>
+                                <div class="position-relative text-center">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Medu_Vadas.JPG/400px-Medu_Vadas.JPG" class="food-img mb-2 shadow-sm" alt="Food" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1601050690597-df0568f70950?q=80&w=400&h=400&fit=crop';">
+                                    <button class="btn btn-outline-qb btn-sm w-100 fw-bold position-absolute start-50 translate-middle-x bg-white" style="bottom: -10px; width: 80% !important;">ADD +</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sticky Cart Sidebar -->
+                <div class="col-lg-4 d-none d-lg-block">
+                    <div class="sticky-cart">
+                        <h4 class="fw-bold mb-4">Cart</h4>
+                        
+                        <div class="d-flex justify-content-between align-items-start mb-3 border-bottom pb-3">
+                            <div class="d-flex gap-2">
+                                <span class="badge-nonveg mt-1"></span>
+                                <div>
+                                    <h6 class="fw-semibold mb-0">Truffle Mushroom Idli</h6>
+                                    <small class="text-muted">$18.50</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center bg-light rounded px-2 py-1 border">
+                                <button class="btn btn-sm text-orange fw-bold px-1 py-0">-</button>
+                                <span class="fw-bold mx-2">1</span>
+                                <button class="btn btn-sm text-orange fw-bold px-1 py-0">+</button>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between text-muted mb-2">
+                                <span>Subtotal</span>
+                                <span>$18.50</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted mb-2">
+                                <span>Delivery Fee</span>
+                                <span>$2.50</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between fw-bold text-navy fs-5">
+                                <span>Total</span>
+                                <span>$21.00</span>
+                            </div>
+                        </div>
+
+                        <a href="cart.html" class="btn btn-primary-qb w-100 btn-lg shadow-sm">Checkout <i class="fa-solid fa-arrow-right ms-2"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,559 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>Documents | UrbanFoods</title>
+
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href="{% static 'assets/images/logo.svg' %}"
+    >
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <style>
+
+        body {
+            min-height: 100vh;
+        }
+
+        .document-card {
+            max-width: 640px;
+            margin: auto;
+            border-radius: 12px;
+        }
+
+        .profile-image {
+            max-height: 180px;
+            max-width: 100%;
+            object-fit: cover;
+        }
+
+        .status-badge {
+            font-size: 14px;
+            padding: 8px 14px;
+            border-radius: 30px;
+        }
+
+        .approved-box {
+            border: 1px solid #198754;
+            background: #eaf8f0;
+            border-radius: 10px;
+        }
+
+        .pending-box {
+            border: 1px solid #0dcaf0;
+            background: #eefaff;
+            border-radius: 10px;
+        }
+
+        .rejected-box {
+            border: 1px solid #dc3545;
+            background: #fff0f1;
+            border-radius: 10px;
+        }
+
+    </style>
+
+</head>
+
+
+<body class="bg-light">
+
+
+<div class="container py-5">
+
+    <div class="card shadow-sm document-card">
+
+        <div class="card-body p-4">
+
+
+            <!-- ===================================== -->
+            <!-- NAME -->
+            <!-- ===================================== -->
+
+            <h4 class="mb-1">
+
+                {% if profile.user.get_full_name %}
+
+                    {{ profile.user.get_full_name }}
+
+                {% else %}
+
+                    {{ profile.user.username }}
+
+                {% endif %}
+
+            </h4>
+
+
+            <!-- ===================================== -->
+            <!-- PHOTO -->
+            <!-- ===================================== -->
+
+            {% if profile.photo %}
+
+                <img
+                    src="{{ profile.photo.url }}"
+                    alt="Delivery Partner Photo"
+                    class="img-fluid rounded mb-3 profile-image"
+                >
+
+            {% endif %}
+
+
+            <!-- ===================================== -->
+            <!-- STATUS -->
+            <!-- ===================================== -->
+
+            <p class="text-muted mb-3">
+
+                Status:
+
+                {% if profile.status|lower == "approved" %}
+
+                    <span class="badge bg-success status-badge">
+                        Approved
+                    </span>
+
+                {% elif profile.status|lower == "pending" %}
+
+                    <span class="badge bg-warning text-dark status-badge">
+                        Pending Verification
+                    </span>
+
+                {% elif profile.status|lower == "rejected" %}
+
+                    <span class="badge bg-danger status-badge">
+                        Rejected
+                    </span>
+
+                {% else %}
+
+                    <span class="badge bg-secondary status-badge">
+                        Incomplete
+                    </span>
+
+                {% endif %}
+
+            </p>
+
+
+            <!-- ===================================== -->
+            <!-- MESSAGES -->
+            <!-- ===================================== -->
+
+            {% for m in messages %}
+
+                <div class="
+                    alert
+                    {% if m.tags == 'error' %}
+                        alert-danger
+                    {% else %}
+                        alert-{{ m.tags }}
+                    {% endif %}
+                    py-2
+                ">
+
+                    {{ m }}
+
+                </div>
+
+            {% endfor %}
+
+
+
+            <!-- ================================================= -->
+            <!-- APPROVED -->
+            <!-- ================================================= -->
+
+            {% if profile.status|lower == "approved" %}
+
+                <div class="approved-box p-4 mb-3">
+
+                    <div class="d-flex align-items-start">
+
+                        <div class="me-3">
+
+                            <i
+                                class="fas fa-check-circle text-success"
+                                style="font-size:32px;"
+                            ></i>
+
+                        </div>
+
+                        <div>
+
+                            <h5 class="text-success mb-1">
+                                Account Approved
+                            </h5>
+
+                            <p class="mb-0">
+                                Your documents have been verified.
+                                You can now start accepting delivery orders.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <a
+                    href="{% url 'base:delivery_dashboard' %}"
+                    class="btn btn-success w-100 mb-2"
+                >
+                    Go to Delivery Dashboard
+                </a>
+
+
+                <a
+                    href="{% url 'base:delivery_logout' %}"
+                    class="btn btn-outline-secondary w-100"
+                >
+                    Logout
+                </a>
+
+
+            <!-- ================================================= -->
+            <!-- PENDING -->
+            <!-- ================================================= -->
+
+            {% elif profile.status|lower == "pending" %}
+
+                <div class="pending-box p-4 mb-3">
+
+                    <div class="d-flex align-items-start">
+
+                        <div class="me-3">
+
+                            <i
+                                class="fas fa-clock text-info"
+                                style="font-size:30px;"
+                            ></i>
+
+                        </div>
+
+                        <div>
+
+                            <h5 class="text-info mb-1">
+                                Documents Under Review
+                            </h5>
+
+                            <p class="mb-0">
+                                Your documents have been submitted
+                                successfully and are currently being
+                                reviewed by the UrbanFoods admin team.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <a
+                    href="{% url 'base:delivery_logout' %}"
+                    class="btn btn-outline-secondary w-100"
+                >
+                    Logout
+                </a>
+
+
+            <!-- ================================================= -->
+            <!-- REJECTED -->
+            <!-- ================================================= -->
+
+            {% elif profile.status|lower == "rejected" %}
+
+                <div class="rejected-box p-4 mb-4">
+
+                    <h5 class="text-danger mb-2">
+                        Application Rejected
+                    </h5>
+
+                    {% if profile.rejection_reason %}
+
+                        <p class="mb-0">
+
+                            <strong>
+                                Reason:
+                            </strong>
+
+                            {{ profile.rejection_reason }}
+
+                        </p>
+
+                    {% else %}
+
+                        <p class="mb-0">
+                            Your application was rejected.
+                            Please correct your documents and resubmit.
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- RESUBMIT FORM -->
+
+                <form
+                    method="post"
+                    enctype="multipart/form-data"
+                    novalidate
+                >
+
+                    {% csrf_token %}
+
+
+                    {% for f in form %}
+
+                        <div class="mb-3">
+
+                            <label
+                                class="form-label fw-semibold"
+                                for="{{ f.id_for_label }}"
+                            >
+
+                                {{ f.label }}
+
+                                {% if f.field.required %}
+
+                                    <span class="text-danger">
+                                        *
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="text-muted">
+                                        (optional)
+                                    </span>
+
+                                {% endif %}
+
+                            </label>
+
+
+                            {{ f }}
+
+
+                            {% if f.name == "photo" %}
+
+                                <img
+                                    id="imagePreview"
+                                    class="img-fluid rounded mt-2 d-none"
+                                    style="max-height:180px;"
+                                    alt="Preview"
+                                >
+
+                            {% endif %}
+
+
+                            {% for e in f.errors %}
+
+                                <small class="text-danger d-block">
+                                    {{ e }}
+                                </small>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% endfor %}
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-warning w-100"
+                    >
+                        Submit for Verification
+                    </button>
+
+                </form>
+
+
+                <a
+                    href="{% url 'base:delivery_logout' %}"
+                    class="btn btn-link w-100 mt-2"
+                >
+                    Logout
+                </a>
+
+
+
+            <!-- ================================================= -->
+            <!-- INCOMPLETE -->
+            <!-- ================================================= -->
+
+            {% else %}
+
+                <div class="alert alert-secondary">
+
+                    <strong>
+                        Complete your documents
+                    </strong>
+
+                    <div class="small mt-1">
+                        Please upload the required documents
+                        to submit your delivery partner application.
+                    </div>
+
+                </div>
+
+
+                <form
+                    method="post"
+                    enctype="multipart/form-data"
+                    novalidate
+                >
+
+                    {% csrf_token %}
+
+
+                    {% for f in form %}
+
+                        <div class="mb-3">
+
+                            <label
+                                class="form-label fw-semibold"
+                                for="{{ f.id_for_label }}"
+                            >
+
+                                {{ f.label }}
+
+                                {% if f.field.required %}
+
+                                    <span class="text-danger">
+                                        *
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="text-muted">
+                                        (optional)
+                                    </span>
+
+                                {% endif %}
+
+                            </label>
+
+
+                            {{ f }}
+
+
+                            {% if f.name == "photo" %}
+
+                                <img
+                                    id="imagePreview"
+                                    class="img-fluid rounded mt-2 d-none"
+                                    style="max-height:180px;"
+                                    alt="Preview"
+                                >
+
+                            {% endif %}
+
+
+                            {% for e in f.errors %}
+
+                                <small class="text-danger d-block">
+                                    {{ e }}
+                                </small>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% endfor %}
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-warning w-100"
+                    >
+                        Submit for Verification
+                    </button>
+
+                </form>
+
+
+                <a
+                    href="{% url 'base:delivery_logout' %}"
+                    class="btn btn-link w-100 mt-2"
+                >
+                    Logout
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ===================================== -->
+<!-- IMAGE PREVIEW -->
+<!-- ===================================== -->
+
+<script>
+
+(function () {
+
+    const input = document.getElementById("id_photo");
+
+    const preview = document.getElementById("imagePreview");
+
+    if (!input || !preview) {
+        return;
+    }
+
+
+    input.addEventListener("change", function () {
+
+        const file = input.files[0];
+
+
+        if (
+            file &&
+            file.type.startsWith("image/")
+        ) {
+
+            preview.src = URL.createObjectURL(file);
+
+            preview.classList.remove("d-none");
+
+        } else {
+
+            preview.classList.add("d-none");
+
+        }
+
+    });
+
+})();
+
+</script>
+
+
+</body>
+
+</html>

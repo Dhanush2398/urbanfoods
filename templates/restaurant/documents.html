@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documents | UrbanFoods</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head><body class="bg-light">
+<div class="container py-5" style="max-width:640px">
+  <div class="card shadow-sm"><div class="card-body p-4">
+    <h4 class="mb-1">{{ profile.restaurant_name }}</h4>
+    {% if profile.image %}
+      <img src="{{ profile.image.url }}" alt="{{ profile.restaurant_name }}" class="img-fluid rounded mb-3" style="max-height:180px">
+    {% endif %}
+    <p class="text-muted">Status: <strong>{{ profile.get_status_display }}</strong></p>
+
+    {% for m in messages %}<div class="alert alert-{% if m.tags == 'error' %}danger{% else %}{{ m.tags }}{% endif %} py-2">{{ m }}</div>{% endfor %}
+
+    {% if profile.status == "pending" %}
+      <div class="alert alert-info">Your documents are under review. You can log in once approved.</div>
+      <a href="{% url 'base:logout' %}" class="btn btn-outline-secondary">Logout</a>
+    {% else %}
+      {% if profile.status == "rejected" %}
+        <div class="alert alert-danger"><strong>Rejected:</strong> {{ profile.rejection_reason }}<br>Please correct and resubmit.</div>
+      {% endif %}
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        {% for f in form %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="{{ f.id_for_label }}">{{ f.label }}{% if f.field.required %} <span class="text-danger">*</span>{% else %} (optional){% endif %}</label>
+            {{ f }}
+            {% if f.name == "image" %}
+              <img id="imagePreview" class="img-fluid rounded mt-2 d-none" style="max-height:180px" alt="Preview">
+            {% endif %}
+            {% for e in f.errors %}<small class="text-danger d-block">{{ e }}</small>{% endfor %}
+          </div>
+        {% endfor %}
+        <button class="btn btn-warning w-100">Submit for verification</button>
+      </form>
+    {% endif %}
+  </div></div>
+</div>
+
+<script>
+(function () {
+  const input = document.getElementById("id_image");
+  const preview = document.getElementById("imagePreview");
+  if (!input || !preview) return;
+  input.addEventListener("change", function () {
+    const file = input.files[0];
+    if (file && file.type.startsWith("image/")) {
+      preview.src = URL.createObjectURL(file);
+      preview.classList.remove("d-none");
+    } else {
+      preview.classList.add("d-none");
+    }
+  });
+})();
+</script>
+</body></html>

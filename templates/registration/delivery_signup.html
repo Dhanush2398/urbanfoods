@@ -1,0 +1,224 @@
+{% load static %}
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Partner Registration | UrbanFoods</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'assets/images/logo.svg' %}">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <link rel="stylesheet" href="{% static 'assets/css/variables.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/global.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/components.css' %}">
+
+    <style>
+        .auth-container { min-height: 100vh; display: flex; }
+        .auth-left {
+            flex: 1;
+            background: linear-gradient(135deg, var(--qb-orange) 0%, #ff8c3a 100%);
+            display: flex; align-items: center; justify-content: center;
+            padding: 40px; color: white; position: relative; overflow: hidden;
+        }
+        .auth-right {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            padding: 40px; background: var(--qb-white);
+        }
+        .auth-card { width: 100%; max-width: 520px; }
+        .auth-illustration { width: 80%; max-width: 500px; position: relative; z-index: 2; }
+        .auth-blob {
+            position: absolute; width: 600px; height: 600px;
+            background: rgba(255,255,255,0.1); border-radius: 50%;
+            top: -100px; left: -100px; z-index: 1;
+        }
+        .password-strength { height: 4px; border-radius: 2px; background: var(--qb-border); margin-top: 8px; overflow: hidden; }
+        .password-strength-bar { height: 100%; width: 0; background: var(--qb-red); transition: all var(--qb-transition-fast); }
+        .password-wrapper { position: relative; }
+        .toggle-password {
+            position: absolute; right: 14px; top: 50%;
+            transform: translateY(-50%); cursor: pointer; color: #666;
+        }
+        .password-wrapper input { padding-right: 44px; }
+        @media (max-width: 991px) { .auth-left { display: none; } }
+
+        .auth-container .auth-card .form-control-qb {
+            background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 12px;
+            min-height: 50px; padding: 12px 16px; font-size: 16px; color: #0f172a;
+            box-shadow: none; transition: border-color .2s ease, box-shadow .2s ease;
+        }
+        .auth-container .auth-card .form-control-qb::placeholder { color: #94a3b8; opacity: 1; }
+        .auth-container .auth-card .form-control-qb:hover { border-color: #94a3b8; }
+        .auth-container .auth-card .form-control-qb:focus {
+            border-color: var(--qb-orange, #ff6b00);
+            box-shadow: 0 0 0 4px rgba(255, 107, 0, 0.15); outline: none;
+        }
+        .auth-container .auth-card .form-label { margin-bottom: 6px; font-size: 14px; }
+        .auth-container .auth-card .btn-primary-qb { min-height: 50px; border-radius: 12px; font-size: 16px; }
+        .auth-container .auth-card .alert { border-radius: 12px; }
+
+        @media (max-width: 991px) {
+            .auth-container { background: #f1f5f9; align-items: flex-start; }
+            .auth-container .auth-right { background: transparent; padding: 24px 16px; align-items: flex-start; }
+            .auth-container .auth-card {
+                background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 20px;
+                padding: 28px 22px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+            }
+        }
+        @media (max-width: 480px) {
+            .auth-container .auth-right { padding: 16px 12px; }
+            .auth-container .auth-card { padding: 24px 18px; border-radius: 18px; }
+            .auth-container .auth-card h3 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <!-- Left Side -->
+        <div class="auth-left d-none d-lg-flex">
+            <div class="auth-blob"></div>
+            <div class="text-center z-2">
+                <h1 class="display-5 fw-extrabold mb-4 text-white">Ride with<br>UrbanFoods</h1>
+                <p class="lead mb-5 text-white-50">Flexible hours, weekly payouts and great incentives. Register, submit your documents and start delivering once approved.</p>
+                <img src="https://images.unsplash.com/photo-1526367790999-0150786686a2?q=80&w=600&h=600&fit=crop" class="auth-illustration rounded-circle shadow-lg border border-5 border-white" alt="Delivery" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1601050690597-df0568f70950?q=80&w=400&h=400&fit=crop';">
+            </div>
+        </div>
+
+        <!-- Right Side Form -->
+        <div class="auth-right">
+            <div class="auth-card animate-fade-up">
+                <div class="text-center mb-4">
+                    <a href="{% url 'base:delivery_login' %}" class="d-inline-flex align-items-center fw-extrabold text-navy fs-3 text-decoration-none">
+                        <img src="{% static 'assets/images/logo.svg' %}" alt="UrbanFoods Logo" width="50" height="50" class="me-2">
+                        UrbanFoods
+                    </a>
+                </div>
+
+                <h3 class="fw-bold text-navy mb-1">Become a Delivery Partner</h3>
+                <p class="text-muted mb-4">Step 1 of 2: account details. Documents come next.</p>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} py-2 small">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="POST" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger py-2 small">{{ form.non_field_errors.0 }}</div>
+                    {% endif %}
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" for="{{ form.first_name.id_for_label }}">First Name</label>
+                            {% render_field form.first_name class="form-control form-control-qb" placeholder="First name" autocomplete="given-name" %}
+                            {% if form.first_name.errors %}<small class="text-danger">{{ form.first_name.errors.0 }}</small>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" for="{{ form.last_name.id_for_label }}">Last Name</label>
+                            {% render_field form.last_name class="form-control form-control-qb" placeholder="Last name" autocomplete="family-name" %}
+                            {% if form.last_name.errors %}<small class="text-danger">{{ form.last_name.errors.0 }}</small>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" for="{{ form.city.id_for_label }}">City</label>
+                            {% render_field form.city class="form-control form-control-qb" placeholder="Bengaluru" %}
+                            {% if form.city.errors %}<small class="text-danger">{{ form.city.errors.0 }}</small>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" for="{{ form.vehicle_type.id_for_label }}">Vehicle</label>
+                            {% render_field form.vehicle_type class="form-select form-control-qb" %}
+                            {% if form.vehicle_type.errors %}<small class="text-danger">{{ form.vehicle_type.errors.0 }}</small>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="{{ form.username.id_for_label }}">Phone number</label>
+                        {% render_field form.username class="form-control form-control-qb" placeholder="98765 43210" type="tel" inputmode="numeric" autocomplete="tel" %}
+                        {% if form.username.errors %}<small class="text-danger">{{ form.username.errors.0 }}</small>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="{{ form.email.id_for_label }}">Email address</label>
+                        {% render_field form.email class="form-control form-control-qb" placeholder="name@example.com" autocomplete="email" %}
+                        {% if form.email.errors %}<small class="text-danger">{{ form.email.errors.0 }}</small>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="{{ form.password1.id_for_label }}">Password</label>
+                        <div class="password-wrapper">
+                            {% render_field form.password1 class="form-control form-control-qb" placeholder="Create a password" autocomplete="new-password" %}
+                            <span class="toggle-password" onclick="togglePassword('{{ form.password1.id_for_label }}', 'toggleIcon1')">
+                                <i class="fas fa-eye" id="toggleIcon1"></i>
+                            </span>
+                        </div>
+                        <div class="password-strength">
+                            <div class="password-strength-bar" id="strengthBar"></div>
+                        </div>
+                        <small class="text-muted mt-1 d-block" id="strengthText">Enter a password</small>
+                        {% if form.password1.errors %}<small class="text-danger">{{ form.password1.errors.0 }}</small>{% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold" for="{{ form.password2.id_for_label }}">Confirm Password</label>
+                        <div class="password-wrapper">
+                            {% render_field form.password2 class="form-control form-control-qb" placeholder="Re-enter your password" autocomplete="new-password" %}
+                            <span class="toggle-password" onclick="togglePassword('{{ form.password2.id_for_label }}', 'toggleIcon2')">
+                                <i class="fas fa-eye" id="toggleIcon2"></i>
+                            </span>
+                        </div>
+                        {% if form.password2.errors %}<small class="text-danger">{{ form.password2.errors.0 }}</small>{% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary-qb w-100 mb-4">Register &amp; Continue</button>
+                </form>
+
+                <p class="text-center text-muted mt-4 mb-2">Already registered? <a href="{% url 'base:delivery_login' %}" class="text-orange fw-bold text-decoration-none">Delivery Partner Login</a></p>
+                <p class="text-center text-muted small mb-1">Want to order food? <a href="{% url 'base:authView' %}" class="text-orange text-decoration-none">Customer sign up</a></p>
+                <p class="text-center text-muted small mb-0">Restaurant owner? <a href="{% url 'base:restaurant_signup' %}" class="text-orange text-decoration-none">Register your restaurant</a></p>
+            </div>
+        </div>
+    </div>
+
+<script>
+function togglePassword(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    const show = input.type === "password";
+    input.type = show ? "text" : "password";
+    icon.classList.toggle("fa-eye", !show);
+    icon.classList.toggle("fa-eye-slash", show);
+}
+
+(function () {
+    const input = document.getElementById("{{ form.password1.id_for_label }}");
+    const bar = document.getElementById("strengthBar");
+    const text = document.getElementById("strengthText");
+    const levels = [
+        { w: "0%",   c: "",        t: "Enter a password" },
+        { w: "33%",  c: "#dc3545", t: "Weak password" },
+        { w: "66%",  c: "#ffc107", t: "Medium password" },
+        { w: "100%", c: "#198754", t: "Strong password" }
+    ];
+    input.addEventListener("input", function () {
+        const v = input.value;
+        let score = 0;
+        if (v.length >= 8) score++;
+        if (/[A-Z]/.test(v) && /[a-z]/.test(v)) score++;
+        if (/\d/.test(v) && /[^A-Za-z0-9]/.test(v)) score++;
+        const lvl = v ? levels[Math.max(score, 1)] : levels[0];
+        bar.style.width = lvl.w;
+        bar.style.background = lvl.c;
+        text.textContent = lvl.t;
+    });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+{% extends "restaurant/base.html" %}
+{% block title %}Menu{% endblock %}
+{% block content %}
+<div class="content-body">
+  <div class="container-fluid">
+
+    {% for m in messages %}
+    <div class="alert alert-{% if m.tags == 'error' %}danger{% else %}{{ m.tags }}{% endif %} py-2">{{ m }}</div>
+    {% endfor %}
+
+    <!-- Add / Edit form -->
+    <div class="card">
+      <div class="card-header border-0">
+        <h4 class="fs-20 mb-0">{% if editing %}Edit: {{ editing.name }}{% else %}Add Menu Item{% endif %}</h4>
+      </div>
+      <div class="card-body pt-0">
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          <div class="row">
+            {% for f in form %}
+              {% if f.name == "is_veg" or f.name == "is_available" %}
+              <div class="col-md-3 mb-3">
+                <div class="form-check mt-md-4">
+                  {{ f }}
+                  <label class="form-check-label" for="{{ f.id_for_label }}">{{ f.label }}</label>
+                </div>
+              </div>
+              {% elif f.name == "categories" %}
+              <div class="col-md-12 mb-3">
+                <label class="form-label fw-semibold">{{ f.label }} <span class="text-danger">*</span>
+                  <small class="text-muted fw-normal">(select one or more)</small></label>
+                <div class="d-flex flex-wrap gap-3">
+                  {% for checkbox in f %}
+                  <div class="d-flex align-items-center gap-2">
+                    <input type="checkbox"
+                           name="{{ checkbox.data.name }}"
+                           value="{{ checkbox.data.value }}"
+                           id="{{ checkbox.id_for_label }}"
+                           {% if checkbox.data.selected %}checked{% endif %}
+                           style="appearance:auto;-webkit-appearance:checkbox;opacity:1;position:static;width:18px;height:18px;margin:0;cursor:pointer">
+                    <label for="{{ checkbox.id_for_label }}" class="mb-0" style="cursor:pointer">{{ checkbox.choice_label }}</label>
+                  </div>
+                  {% endfor %}
+                </div>
+                {% for e in f.errors %}<small class="text-danger d-block">{{ e }}</small>{% endfor %}
+              </div>
+              {% else %}
+              <div class="{% if f.name == 'description' %}col-md-12{% else %}col-md-6{% endif %} mb-3">
+                <label class="form-label fw-semibold" for="{{ f.id_for_label }}">{{ f.label }}{% if f.field.required %} <span class="text-danger">*</span>{% endif %}</label>
+                {{ f }}
+                {% if f.name == "image" and editing and editing.image %}
+                  <img src="{{ editing.image.url }}" alt="" width="70" height="70" class="rounded mt-2" style="object-fit:cover">
+                {% endif %}
+                {% for e in f.errors %}<small class="text-danger d-block">{{ e }}</small>{% endfor %}
+              </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+          <button class="btn btn-primary">{% if editing %}Update Item{% else %}Add Item{% endif %}</button>
+          {% if editing %}<a href="{% url 'base:restaurant_menu' %}" class="btn btn-outline-secondary">Cancel</a>{% endif %}
+        </form>
+      </div>
+    </div>
+
+    <!-- Menu list -->
+    <div class="card">
+      <div class="card-header border-0">
+        <h4 class="fs-20 mb-0">My Menu ({{ items|length }})</h4>
+      </div>
+      <div class="card-body pt-0 table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr><th>Item</th><th>Categories</th><th>Price</th><th>Type</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+          {% for i in items %}
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  {% if i.image %}
+                    <img src="{{ i.image.url }}" alt="{{ i.name }}" width="55" height="55" class="rounded" style="object-fit:cover">
+                  {% else %}
+                    <div class="rounded bg-light d-flex align-items-center justify-content-center text-muted" style="width:55px;height:55px"><i class="fas fa-utensils"></i></div>
+                  {% endif %}
+                  <div>{{ i.name }}<br><small class="text-muted">{{ i.description|truncatechars:60 }}</small></div>
+                </div>
+              </td>
+              <td>
+                {% for c in i.category_list %}
+                  <span class="badge bg-light text-dark border">{{ c }}</span>
+                {% endfor %}
+              </td>
+              <td>₹{{ i.price }}</td>
+              <td><span class="badge {% if i.is_veg %}bg-success{% else %}bg-danger{% endif %}">{% if i.is_veg %}Veg{% else %}Non-veg{% endif %}</span></td>
+              <td><span class="badge {% if i.is_available %}bg-success{% else %}bg-secondary{% endif %}">{% if i.is_available %}Available{% else %}Unavailable{% endif %}</span></td>
+              <td>
+                <div class="d-flex gap-2">
+                  <a href="{% url 'base:restaurant_menu_edit' i.pk %}" class="btn btn-primary btn-sm">Edit</a>
+                  <form method="post" action="{% url 'base:restaurant_menu_delete' i.pk %}" onsubmit="return confirm('Delete {{ i.name|escapejs }}?')">
+                    {% csrf_token %}
+                    <button class="btn btn-danger btn-sm">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="6" class="text-center text-muted">No menu items yet. Add your first item above.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

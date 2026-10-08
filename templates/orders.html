@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders | UrbanFoods</title>
+    <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/global.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <style>
+        body { background-color: var(--qb-light-gray); }
+        .dashboard-container { display: flex; min-height: calc(100vh - 76px); padding-top: 76px; }
+        .sidebar { width: 280px; background: var(--qb-white); border-right: 1px solid var(--qb-border); padding: 30px 20px; position: fixed; height: calc(100vh - 76px); overflow-y: auto; z-index: 100; transition: transform var(--qb-transition-fast); }
+        .main-content { flex-grow: 1; margin-left: 280px; padding: 40px; }
+        .sidebar-link { display: flex; align-items: center; padding: 12px 20px; color: var(--qb-text-muted); text-decoration: none; border-radius: var(--qb-radius-md); margin-bottom: 5px; font-weight: 600; transition: all var(--qb-transition-fast); }
+        .sidebar-link i { width: 24px; font-size: 1.1rem; margin-right: 10px; }
+        .sidebar-link:hover, .sidebar-link.active { background: var(--qb-orange-light); color: var(--qb-orange); }
+        @media (max-width: 991px) { .sidebar { transform: translateX(-100%); } .sidebar.show { transform: translateX(0); } .main-content { margin-left: 0; padding: 20px; } }
+        
+        .order-card { border: 1px solid var(--qb-border); border-radius: var(--qb-radius-lg); background: var(--qb-white); padding: 25px; margin-bottom: 20px; transition: all var(--qb-transition-fast); }
+        .order-card:hover { box-shadow: var(--qb-shadow-sm); border-color: var(--qb-orange); }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg fixed-top bg-white shadow-sm py-3 border-bottom z-3">
+        <div class="container-fluid px-4">
+            <button class="btn btn-light d-lg-none me-3" type="button" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+            <a class="navbar-brand d-flex align-items-center fw-extrabold text-navy m-0" href="index.html">
+                <img src="assets/images/logo.svg" alt="UrbanFoods Logo" width="30" height="30" class="me-2"> UrbanFoods
+            </a>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar shadow-sm" id="sidebar">
+            <nav class="nav flex-column">
+                <a href="dashboard.html" class="sidebar-link"><i class="fa-solid fa-house"></i> Dashboard</a>
+                <a href="profile.html" class="sidebar-link"><i class="fa-solid fa-user"></i> My Profile</a>
+                <a href="orders.html" class="sidebar-link active"><i class="fa-solid fa-clipboard-list"></i> Orders</a>
+                <a href="wishlist.html" class="sidebar-link"><i class="fa-solid fa-heart"></i> Favorites</a>
+                <a href="offers.html" class="sidebar-link"><i class="fa-solid fa-ticket"></i> Coupons</a>
+                <a href="notifications.html" class="sidebar-link"><i class="fa-solid fa-bell"></i> Notifications</a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4 animate-fade-up">
+                <h2 class="fw-extrabold text-navy m-0">My Orders</h2>
+            </div>
+
+            <ul class="nav nav-pills mb-4 animate-fade-up delay-100" id="orderTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active bg-white text-navy border rounded-pill me-2 fw-semibold px-4" data-bs-toggle="pill" type="button">All Orders</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link bg-white text-navy border rounded-pill fw-semibold px-4" data-bs-toggle="pill" type="button">Ongoing</button>
+                </li>
+            </ul>
+
+            <div class="animate-fade-up delay-200">
+                <!-- Order 1 -->
+                <div class="order-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary bg-opacity-10 text-primary px-3 py-1 rounded-pill small fw-bold me-3">On the way</div>
+                            <span class="text-muted small">Order #QB-8945 &bull; Today, 7:45 PM</span>
+                        </div>
+                        <h5 class="fw-bold text-orange m-0">&#8377;620</h5>
+                    </div>
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="https://images.unsplash.com/photo-1601050690597-df0568f70950?q=80&w=600&h=600&fit=crop" class="rounded me-3" width="60" height="60" style="object-fit:cover;" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1601050690597-df0568f70950?q=80&w=400&h=400&fit=crop';">
+                                <div>
+                                    <h5 class="fw-bold mb-1">Punjabi Tadka</h5>
+                                    <p class="text-muted small mb-0">1x Chicken Meals, 1x Paneer Butter Masala</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            <a href="order_tracking.html" class="btn btn-outline-qb w-100 mb-2">Track Order</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order 2 -->
+                <div class="order-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-success bg-opacity-10 text-success px-3 py-1 rounded-pill small fw-bold me-3">Delivered</div>
+                            <span class="text-muted small">Order #QB-8942 &bull; Oct 24, 2026</span>
+                        </div>
+                        <h5 class="fw-bold text-navy m-0">&#8377;380</h5>
+                    </div>
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="https://instamart-media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,h_600,w_600//InstamartAssets/idli_vada.webp" class="rounded me-3" width="60" height="60" style="object-fit:cover;" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1601050690597-df0568f70950?q=80&w=400&h=400&fit=crop';">
+                                <div>
+                                    <h5 class="fw-bold mb-1">Dosa &amp; Idli House</h5>
+                                    <p class="text-muted small mb-0">2x Masala Dosa, 1x Filter Filter Coffee</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            <button class="btn btn-primary-qb w-100 mb-2">Reorder</button>
+                            <a href="#" class="text-orange text-decoration-none small fw-semibold">Download Invoice</a>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script> document.getElementById('sidebarToggle').addEventListener('click', function() { document.getElementById('sidebar').classList.toggle('show'); }); </script>
+</body>
+</html>

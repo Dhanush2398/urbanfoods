@@ -1,0 +1,342 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+
+<div class="content-body">
+
+    <div class="container-fluid">
+
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+
+            <div>
+                <h3 class="mb-1">Delivery Partners</h3>
+                <p class="text-muted mb-0">
+                    Manage all registered delivery partners.
+                </p>
+            </div>
+
+            <a href="{% url 'base:delivery_requests' %}"
+               class="btn btn-primary mt-2 mt-md-0">
+
+                <i class="fas fa-clock me-1"></i>
+                Pending Requests
+
+            </a>
+
+        </div>
+
+
+        <!-- Filter -->
+        <div class="card mb-4">
+
+            <div class="card-body">
+
+                <form method="get">
+
+                    <div class="row align-items-end">
+
+                        <div class="col-md-4">
+
+                            <label class="form-label">
+                                Filter by Status
+                            </label>
+
+                            <select
+                                name="status"
+                                class="form-control"
+                            >
+
+                                <option value="">
+                                    All Partners
+                                </option>
+
+                                <option
+                                    value="incomplete"
+                                    {% if selected_status == "incomplete" %}selected{% endif %}
+                                >
+                                    Incomplete
+                                </option>
+
+                                <option
+                                    value="pending"
+                                    {% if selected_status == "pending" %}selected{% endif %}
+                                >
+                                    Pending
+                                </option>
+
+                                <option
+                                    value="approved"
+                                    {% if selected_status == "approved" %}selected{% endif %}
+                                >
+                                    Approved
+                                </option>
+
+                                <option
+                                    value="rejected"
+                                    {% if selected_status == "rejected" %}selected{% endif %}
+                                >
+                                    Rejected
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="col-md-2 mt-3 mt-md-0">
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                            >
+                                <i class="fas fa-filter me-1"></i>
+                                Filter
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+        <!-- Delivery Partner List -->
+        <div class="card">
+
+            <div class="card-header">
+
+                <h4 class="card-title mb-0">
+                    All Delivery Partners
+                </h4>
+
+            </div>
+
+
+            <div class="card-body">
+
+                {% if delivery_partners %}
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>#</th>
+
+                                <th>Partner</th>
+
+                                <th>Phone</th>
+
+                                <th>City</th>
+
+                                <th>Vehicle</th>
+
+                                <th>Vehicle Number</th>
+
+                                <th>Status</th>
+
+                                <th>Joined</th>
+
+                                <th>Action</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                        {% for partner in delivery_partners %}
+
+                            <tr>
+
+                                <!-- Number -->
+                                <td>
+                                    {{ forloop.counter }}
+                                </td>
+
+
+                                <!-- Partner -->
+                                <td>
+
+                                    <div class="d-flex align-items-center">
+
+                                        {% if partner.photo %}
+
+                                            <img
+                                                src="{{ partner.photo.url }}"
+                                                alt="{{ partner.user.get_full_name }}"
+                                                width="45"
+                                                height="45"
+                                                class="rounded-circle me-2"
+                                                style="object-fit: cover;"
+                                            >
+
+                                        {% else %}
+
+                                            <div
+                                                class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2"
+                                                style="width:45px;height:45px;"
+                                            >
+                                                <i class="fas fa-user text-muted"></i>
+                                            </div>
+
+                                        {% endif %}
+
+
+                                        <div>
+
+                                            <strong class="d-block">
+
+                                                {% if partner.user.get_full_name %}
+                                                    {{ partner.user.get_full_name }}
+                                                {% else %}
+                                                    {{ partner.user.username }}
+                                                {% endif %}
+
+                                            </strong>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- Phone -->
+                                <td>
+                                    {{ partner.user.username }}
+                                </td>
+
+
+                                <!-- City -->
+                                <td>
+                                    {{ partner.city|default:"-" }}
+                                </td>
+
+
+                                <!-- Vehicle -->
+                                <td>
+                                    {{ partner.get_vehicle_type_display|default:"-" }}
+                                </td>
+
+
+                                <!-- Vehicle Number -->
+                                <td>
+                                    {{ partner.vehicle_number|default:"-" }}
+                                </td>
+
+
+                                <!-- Status -->
+                                <td>
+
+                                    {% if partner.status == "approved" %}
+
+                                        <span class="badge bg-success">
+                                            Approved
+                                        </span>
+
+                                    {% elif partner.status == "pending" %}
+
+                                        <span class="badge bg-warning text-dark">
+                                            Pending
+                                        </span>
+
+                                    {% elif partner.status == "rejected" %}
+
+                                        <span class="badge bg-danger">
+                                            Rejected
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge bg-secondary">
+                                            Incomplete
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- Joined -->
+                                <td>
+
+                                    {% if partner.created_at %}
+                                        {{ partner.created_at|date:"d M Y" }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- Action -->
+                                <td>
+
+                                    <a
+                                        href="{% url 'base:delivery_detail' partner.pk %}"
+                                        class="btn btn-sm btn-primary"
+                                        title="View Details"
+                                    >
+
+                                        <i class="fas fa-eye"></i>
+
+                                    </a>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                {% else %}
+
+                    <div class="text-center py-5">
+
+                        <div class="mb-3">
+
+                            <i
+                                class="fas fa-motorcycle fa-4x text-muted"
+                            ></i>
+
+                        </div>
+
+                        <h4>
+                            No Delivery Partners Found
+                        </h4>
+
+                        <p class="text-muted mb-0">
+
+                            There are no delivery partners matching
+                            the selected filter.
+
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

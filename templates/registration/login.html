@@ -1,0 +1,230 @@
+{% load static %}
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | UrbanFoods</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'assets/images/logo.svg' %}">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <link rel="stylesheet" href="{% static 'assets/css/variables.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/global.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/components.css' %}">
+
+    <style>
+        .auth-container { min-height: 100vh; display: flex; }
+        .auth-left {
+            flex: 1;
+            background: linear-gradient(135deg, var(--qb-orange) 0%, #ff8c3a 100%);
+            display: flex; align-items: center; justify-content: center;
+            padding: 40px; color: white; position: relative; overflow: hidden;
+        }
+        .auth-right {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            padding: 40px; background: var(--qb-white);
+        }
+        .auth-card { width: 100%; max-width: 450px; }
+        .auth-illustration { width: 80%; max-width: 500px; position: relative; z-index: 2; }
+        .auth-blob {
+            position: absolute; width: 600px; height: 600px;
+            background: rgba(255,255,255,0.1); border-radius: 50%;
+            top: -100px; left: -100px; z-index: 1;
+        }
+        .password-wrapper { position: relative; }
+        .toggle-password {
+            position: absolute; right: 14px; top: 50%;
+            transform: translateY(-50%); cursor: pointer; color: #666;
+        }
+        .password-wrapper input { padding-right: 44px; }
+        @media (max-width: 991px) { .auth-left { display: none; } }
+        /* UrbanFoods auth pages (login + signup): visible borders + better mobile layout.
+   Selectors are prefixed with .auth-container so they win over components.css
+   regardless of where this file is linked. */
+
+/* ---------- Inputs: clear borders on all screen sizes ---------- */
+.auth-container .auth-card .form-control-qb {
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 12px;
+    min-height: 50px;
+    padding: 12px 16px;
+    font-size: 16px; /* 16px stops iOS from zooming into the field */
+    color: #0f172a;
+    box-shadow: none;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.auth-container .auth-card .form-control-qb::placeholder {
+    color: #94a3b8;
+    opacity: 1;
+}
+
+.auth-container .auth-card .form-control-qb:hover {
+    border-color: #94a3b8;
+}
+
+.auth-container .auth-card .form-control-qb:focus {
+    border-color: var(--qb-orange, #ff6b00);
+    box-shadow: 0 0 0 4px rgba(255, 107, 0, 0.15);
+    outline: none;
+}
+
+.auth-container .auth-card .form-label {
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+.auth-container .auth-card .form-check-input {
+    border: 1.5px solid #94a3b8;
+}
+
+.auth-container .auth-card .form-check-input:checked {
+    background-color: var(--qb-orange, #ff6b00);
+    border-color: var(--qb-orange, #ff6b00);
+}
+
+.auth-container .auth-card .btn-primary-qb {
+    min-height: 50px;
+    border-radius: 12px;
+    font-size: 16px;
+}
+
+.auth-container .auth-card .btn-outline-secondary {
+    border: 1.5px solid #cbd5e1;
+    border-radius: 12px;
+    min-height: 48px;
+}
+
+.auth-container .auth-card .alert {
+    border-radius: 12px;
+}
+
+/* ---------- Mobile / tablet: card with border on a soft background ---------- */
+@media (max-width: 991px) {
+    .auth-container {
+        background: #f1f5f9;
+        align-items: flex-start;
+    }
+
+    .auth-container .auth-right {
+        background: transparent;
+        padding: 24px 16px;
+        align-items: flex-start;
+    }
+
+    .auth-container .auth-card {
+        background: #ffffff;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 28px 22px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-container .auth-right {
+        padding: 16px 12px;
+    }
+
+    .auth-container .auth-card {
+        padding: 24px 18px;
+        border-radius: 18px;
+    }
+
+    .auth-container .auth-card h3 {
+        font-size: 1.5rem;
+    }
+}
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <!-- Left Side Illustration -->
+        <div class="auth-left d-none d-lg-flex">
+            <div class="auth-blob"></div>
+            <div class="text-center z-2">
+                <h1 class="display-5 fw-extrabold mb-4">Welcome back to<br>UrbanFoods</h1>
+                <p class="lead mb-5 opacity-75">Discover the best food and drinks in Bengaluru.</p>
+                <img src="https://images.unsplash.com/photo-1601050690597-df0568f70950?q=80&w=600&h=600&fit=crop" class="auth-illustration rounded-circle shadow-lg border border-5 border-white" alt="Food" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1601050690597-df0568f70950?q=80&w=400&h=400&fit=crop';">
+            </div>
+        </div>
+
+        <!-- Right Side Form -->
+        <div class="auth-right">
+            <div class="auth-card animate-fade-up">
+                <div class="text-center mb-5">
+                    <a href="{% url 'base:login' %}" class="d-inline-flex align-items-center fw-extrabold text-navy fs-3 text-decoration-none">
+                        <img src="{% static 'assets/images/logo.svg' %}" alt="UrbanFoods Logo" width="50" height="50" class="me-2">
+                        UrbanFoods
+                    </a>
+                </div>
+
+                <h3 class="fw-bold text-navy mb-1">Login</h3>
+                <p class="text-muted mb-4">Enter your credentials to access your account</p>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} py-2 small">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="POST" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ next }}">
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger py-2 small">{{ form.non_field_errors.0 }}</div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="{{ form.username.id_for_label }}">Phone number</label>
+                        {% render_field form.username class="form-control form-control-qb" placeholder="98765 43210" type="tel" inputmode="numeric" autocomplete="tel" %}
+                        {% if form.username.errors %}
+                            <small class="text-danger">{{ form.username.errors.0 }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <label class="form-label fw-semibold" for="{{ form.password.id_for_label }}">Password</label>
+                            <a href="#" class="text-muted small text-decoration-none text-hover-orange">Forgot password?</a>
+                        </div>
+                        <div class="password-wrapper">
+                            {% render_field form.password class="form-control form-control-qb" placeholder="Enter your password" autocomplete="current-password" %}
+                            <span class="toggle-password" onclick="togglePassword('{{ form.password.id_for_label }}', 'toggleIcon')">
+                                <i class="fas fa-eye" id="toggleIcon"></i>
+                            </span>
+                        </div>
+                        {% if form.password.errors %}
+                            <small class="text-danger">{{ form.password.errors.0 }}</small>
+                        {% endif %}
+                    </div>
+
+                  
+
+                    <button type="submit" class="btn btn-primary-qb w-100 mb-4">Login In</button>
+
+                </form>
+
+                <p class="text-center text-muted mt-5 mb-0">Don't have an account? <a href="{% url 'base:authView' %}" class="text-orange fw-bold text-decoration-none">Sign Up</a></p>
+            </div>
+        </div>
+    </div>
+
+<script>
+function togglePassword(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    const show = input.type === "password";
+    input.type = show ? "text" : "password";
+    icon.classList.toggle("fa-eye", !show);
+    icon.classList.toggle("fa-eye-slash", show);
+}
+</script>
+</body>
+</html>
