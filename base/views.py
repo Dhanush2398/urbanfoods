@@ -1,3 +1,5 @@
+import datetime
+from django.utils import timezone
 from functools import wraps
 
 from django.contrib import messages
@@ -8,13 +10,29 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-from django.http import Http404
-from django.db.models import Count, Q
+from django.http import Http404, HttpResponse
+from django.db import models
+from django.db.models import Count, Q, Sum
+from decimal import Decimal
+from django.db import transaction
+from django.views.decorators.csrf import csrf_exempt
+import json
+import base64
+import hashlib
+import requests
+import uuid
+from django.conf import settings
 from .forms import (
     DeliveryLoginForm, PhoneLoginForm, RegistrationForm, RestaurantRegistrationForm,
-    RestaurantDocumentForm, RestaurantLoginForm, MenuItemForm, DeliveryRegistrationForm, DeliveryDocumentForm, DeliveryLoginForm
+    RestaurantDocumentForm, RestaurantLoginForm, MenuItemForm, DeliveryRegistrationForm, DeliveryDocumentForm, DeliveryLoginForm,
+    UserUpdateForm, CustomerAddressForm
 )
-from .models import RestaurantProfile, MenuItem,CATEGORY_CHOICES,DeliveryPartnerProfile
+from .models import OrderStatusHistory, DeliveryPartnerLocation
+from .models import (
+    RestaurantProfile, MenuItem, CATEGORY_CHOICES, DeliveryPartnerProfile, 
+    CustomerAddress, Cart, CartItem, Order, OrderItem,
+    LedgerEntry, WithdrawalRequest, RestaurantEarnings, CustomerWallet, RestaurantPayoutSettings
+)
 from django.core.paginator import Paginator
 staff_only = user_passes_test(lambda u: u.is_active and u.is_staff, login_url="base:login")
 
@@ -59,7 +77,66 @@ def home(request):
 
 @login_required
 def profile(request):
-    return render(request, "profile.html")
+    if request.method == "POST":
+        form = UserUpdateForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully.")
+            return redirect("base:profile")
+    else:
+        form = UserUpdateForm(instance=request.user)
+    return render(request, "profile.html", {"form": form})
+
+@login_required
+def manage_addresses(request):
+    addresses = request.user.addresses.all()
+    return render(request, "addresses.html", {"addresses": addresses})
+
+@login_required
+def add_address(request):
+    if request.method == "POST":
+        form = CustomerAddressForm(request.POST)
+        if form.is_valid():
+            addr = form.save(commit=False)
+            addr.user = request.user
+            if not request.user.addresses.exists():
+                addr.is_default = True
+            addr.save()
+            messages.success(request, "Address added successfully.")
+            return redirect("base:manage_addresses")
+    else:
+        form = CustomerAddressForm(initial={"recipient_name": request.user.get_full_name(), "phone_number": request.user.username})
+    return render(request, "address_form.html", {"form": form})
+
+@login_required
+def edit_address(request, pk):
+    addr = get_object_or_404(CustomerAddress, pk=pk, user=request.user)
+    if request.method == "POST":
+        form = CustomerAddressForm(request.POST, instance=addr)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Address updated successfully.")
+            return redirect("base:manage_addresses")
+    else:
+        form = CustomerAddressForm(instance=addr)
+    return render(request, "address_form.html", {"form": form, "editing": True})
+
+@login_required
+@require_POST
+def delete_address(request, pk):
+    addr = get_object_or_404(CustomerAddress, pk=pk, user=request.user)
+    addr.delete()
+    messages.success(request, "Address deleted.")
+    return redirect("base:manage_addresses")
+
+@login_required
+@require_POST
+def set_default_address(request, pk):
+    addr = get_object_or_404(CustomerAddress, pk=pk, user=request.user)
+    addr.is_default = True
+    addr.save()
+    messages.success(request, "Default address updated.")
+    return redirect("base:manage_addresses")
 
 
 def authView(request):
@@ -84,6 +161,14 @@ class UrbanLoginView(LoginView):
     template_name = "registration/login.html"
     authentication_form = PhoneLoginForm
     redirect_authenticated_user = True
+    
+    def get_success_url(self):
+        user = self.request.user
+        if user.is_staff:
+            return reverse("base:dashboard")
+        elif hasattr(user, 'restaurant') and user.restaurant:
+            return reverse("base:restaurant_dashboard")
+        return super().get_success_url()
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -176,10 +261,56 @@ def restaurant_documents(request):
 def restaurant_dashboard(request):
     if request.restaurant.status != RestaurantProfile.APPROVED:
         return redirect("base:restaurant_documents")
+        
+    orders = Order.objects.filter(restaurant=request.restaurant).exclude(payment_status='pending').order_by('-created_at')
+    orders = orders.prefetch_related('items__menu_item', 'ledger_entries')
+    
+    from .models import RestaurantEarnings
+    earnings = RestaurantEarnings.objects.filter(restaurant=request.restaurant).first()
+    
+    from django.utils import timezone
+    today = timezone.now().date()
+    
+    today_revenue = sum([
+        o.ledger_entries.filter(transaction_type='order_payment').first().restaurant_earnings 
+        for o in orders.filter(created_at__date=today) 
+        if o.ledger_entries.filter(transaction_type='order_payment').exists()
+    ])
+        
     return render(request, "restaurant/dashboard.html", {
         "profile": request.restaurant,
         "menu_count": request.restaurant.menu_items.count(),
+        "orders": orders,
+        "total_orders": orders.count(),
+        "today_revenue": today_revenue,
+        "earnings": earnings
     })
+
+@login_required
+@restaurant_required
+@require_POST
+def update_order_status(request, pk):
+    order = get_object_or_404(Order, pk=pk, restaurant=request.restaurant)
+    new_status = request.POST.get('status')
+    
+    valid_transitions = {
+        'paid': ['accepted', 'rejected'],
+        'accepted': ['preparing'],
+        'preparing': ['ready'],
+    }
+    
+    if new_status in valid_transitions.get(order.status, []):
+        old_status = order.status
+        order.status = new_status
+        order.save()
+        OrderStatusHistory.objects.create(order=order, previous_status=old_status, new_status=new_status, changed_by=request.user)
+        messages.success(request, f"Order #{order.id} marked as {order.get_status_display()}.")
+        if new_status == 'rejected':
+            order.process_refund()
+    else:
+        messages.error(request, "Invalid status transition.")
+        
+    return redirect('base:restaurant_dashboard')
 
 
 # ---------- admin side ----------
@@ -329,13 +460,10 @@ def restaurant_category(request, pk, category):
 def restaurant_directory(request):
     q = request.GET.get("q", "").strip()
     selected = [c for c in request.GET.getlist("cuisine") if c in dict(CATEGORY_CHOICES)]
-    veg = request.GET.get("veg") == "1"
     sort = request.GET.get("sort", "new")
 
     qs = RestaurantProfile.objects.filter(status=RestaurantProfile.APPROVED).annotate(
-        item_count=Count("menu_items", filter=Q(menu_items__is_available=True), distinct=True),
-        nonveg_count=Count("menu_items", filter=Q(menu_items__is_available=True,
-                                                  menu_items__is_veg=False), distinct=True),
+        item_count=Count("menu_items", filter=Q(menu_items__is_available=True), distinct=True)
     )
 
     if q:
@@ -348,8 +476,7 @@ def restaurant_directory(request):
             cq |= Q(category_names__icontains=c)
         qs = qs.filter(pk__in=MenuItem.objects.filter(is_available=True).filter(cq).values("restaurant_id"))
 
-    if veg:
-        qs = qs.filter(item_count__gt=0, nonveg_count=0)
+    # Veg filter removed as platform is strictly vegetarian
 
     qs = qs.order_by({"name": "restaurant_name", "items": "-item_count"}.get(sort, "-created_at"))
 
@@ -359,7 +486,7 @@ def restaurant_directory(request):
 
     return render(request, "restaurants.html", {
         "page_obj": page_obj,
-        "q": q, "veg": veg, "sort": sort,
+        "q": q, "sort": sort,
         "cuisine_options": [(v, v in selected) for v, _ in CATEGORY_CHOICES],
         "querystring": params.urlencode(),
     })
@@ -537,14 +664,44 @@ def delivery_dashboard(request):
 
     if status != DeliveryPartnerProfile.APPROVED:
         return redirect("base:delivery_documents")
+        
+    orders = Order.objects.filter(delivery_partner=profile).order_by('-updated_at')
 
     return render(
         request,
         "delivery/dashboard.html",
         {
-            "profile": profile
+            "profile": profile,
+            "orders": orders,
         }
     )
+
+@login_required
+@delivery_required
+@require_POST
+def delivery_update_order(request, pk):
+    order = get_object_or_404(Order, pk=pk, delivery_partner=request.partner)
+    new_status = request.POST.get('status')
+    
+    valid_transitions = {
+        'ready': ['out_for_delivery'],
+        'out_for_delivery': ['delivered']
+    }
+    
+    if new_status in valid_transitions.get(order.status, []):
+        old_status = order.status
+        order.status = new_status
+        order.save()
+        OrderStatusHistory.objects.create(order=order, previous_status=old_status, new_status=new_status, changed_by=request.user)
+        messages.success(request, f"Order #{order.id} marked as {order.get_status_display()}.")
+        
+        if new_status == 'delivered':
+            order.process_order_delivered()
+            
+    else:
+        messages.error(request, "Invalid status transition.")
+        
+    return redirect('base:delivery_dashboard')
     
 @staff_only
 def delivery_requests(request):
@@ -671,22 +828,3 @@ def delivery_detail(request, pk):
             "profile": profile,
         },
     )
-
-@restaurant_required
-def restaurant_profile(request):
-    profile = request.restaurant
-
-    return render(request, "restaurant/profile.html", {
-        "profile": profile,
-        "owner": request.user,
-    })
-
-
-@delivery_required
-def delivery_profile(request):
-    profile = request.partner
-
-    return render(request, "delivery/profile.html", {
-        "profile": profile,
-        "owner": request.user,
-    })

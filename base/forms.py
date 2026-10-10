@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.db import transaction
 
-from .models import RestaurantProfile, MenuItem, CATEGORY_CHOICES,DeliveryPartnerProfile
+from .models import RestaurantProfile, MenuItem, CATEGORY_CHOICES,DeliveryPartnerProfile, CustomerAddress
 
 User = get_user_model()
 
@@ -118,11 +118,11 @@ class MenuItemForm(forms.ModelForm):
         error_messages={"required": "Select at least one category."},
     )
 
-    field_order = ["name", "categories", "price", "description", "image", "is_veg", "is_available"]
+    field_order = ["name", "categories", "price", "serving_unit", "pieces_per_serving", "quantity_in_grams_or_ml", "description", "image", "is_available"]
 
     class Meta:
         model = MenuItem
-        fields = ["name", "price", "description", "image", "is_veg", "is_available"]
+        fields = ["name", "price", "serving_unit", "pieces_per_serving", "quantity_in_grams_or_ml", "description", "image", "is_available", "cgst_rate", "sgst_rate", "tax_inclusive"]
         widgets = {"description": forms.Textarea(attrs={"rows": 2})}
 
     def __init__(self, *args, **kwargs):
@@ -193,3 +193,23 @@ class DeliveryLoginForm(PhoneLoginForm):
         super().confirm_login_allowed(user)
         if getattr(user, "delivery_partner", None) is None:
             raise forms.ValidationError("This is not a delivery partner account.", code="invalid_login")
+
+class UserUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name", "email"]
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for f in self.fields.values():
+            f.widget.attrs["class"] = "form-control form-control-qb"
+
+class CustomerAddressForm(forms.ModelForm):
+    class Meta:
+        model = CustomerAddress
+        fields = ["recipient_name", "phone_number", "house_flat_no", "street_area", "landmark", "city", "state", "pin_code"]
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for f in self.fields.values():
+            f.widget.attrs["class"] = "form-control form-control-qb"

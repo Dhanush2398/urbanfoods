@@ -35,10 +35,19 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start">
                                 <h5 class="fw-bold mb-1">{{ i.name }}</h5>
-                                <span class="badge {% if i.is_veg %}bg-success{% else %}bg-danger{% endif %}">{% if i.is_veg %}Veg{% else %}Non-veg{% endif %}</span>
+                                <span class="badge bg-success"><i class="fa-solid fa-leaf"></i> Veg</span>
                             </div>
                             <p class="text-muted small mb-2">{{ i.description|truncatechars:60 }}</p>
-                            <span class="fw-bold text-orange">₹{{ i.price }}</span>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="fw-bold text-orange">₹{{ i.price }}</span>
+                                    <span class="text-muted small">/ {{ i.serving_unit }}</span>
+                                </div>
+                                <div class="text-end">
+                                    {% if i.pieces_per_serving %}<span class="badge bg-light text-dark border" style="font-size:0.7rem">{{ i.pieces_per_serving }} pcs</span>{% endif %}
+                                    {% if i.quantity_in_grams_or_ml %}<span class="badge bg-light text-dark border" style="font-size:0.7rem">{{ i.quantity_in_grams_or_ml }} g/ml</span>{% endif %}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </a>

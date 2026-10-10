@@ -1,0 +1,108 @@
+{% extends "customer_profile_base.html" %}
+{% block profile_content %}
+<h2 class="fw-extrabold text-navy mb-4">{% if editing %}Edit Address{% else %}Add New Address{% endif %}</h2>
+<div class="card card-qb p-4 mb-4">
+    <div class="mb-4">
+        <button type="button" class="btn btn-outline-qb" id="btn-use-location">
+            <i class="fa-solid fa-location-crosshairs me-2"></i> Use My Current Location
+        </button>
+        <span id="location-status" class="text-muted small ms-2"></span>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Recipient Name *</label>
+                {{ form.recipient_name }}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Phone Number *</label>
+                {{ form.phone_number }}
+            </div>
+            <div class="col-md-12">
+                <label class="form-label fw-semibold">House / Flat No *</label>
+                {{ form.house_flat_no }}
+            </div>
+            <div class="col-md-12">
+                <label class="form-label fw-semibold">Street / Area *</label>
+                {{ form.street_area }}
+            </div>
+            <div class="col-md-12">
+                <label class="form-label fw-semibold">Landmark</label>
+                {{ form.landmark }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">City *</label>
+                {{ form.city }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">State *</label>
+                {{ form.state }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">PIN Code *</label>
+                {{ form.pin_code }}
+            </div>
+        </div>
+        <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary-qb px-4">Save Address</button>
+            <a href="{% url 'base:manage_addresses' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.getElementById('btn-use-location').addEventListener('click', function() {
+    const status = document.getElementById('location-status');
+    status.innerText = 'Requesting location...';
+    if (!navigator.geolocation) {
+        status.innerText = 'Geolocation is not supported by your browser';
+        return;
+    }
+    navigator.geolocation.getCurrentPosition((position) => {
+        status.innerText = 'Fetching address...';
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+            .then(res => res.json())
+            .then(data => {
+                status.innerText = 'Address auto-filled!';
+                if (data.address) {
+                    // Try to get the most specific street/area name available
+                    const area = data.address.road || data.address.suburb || data.address.neighbourhood || data.address.village || data.address.hamlet || data.address.county || data.display_name.split(',')[0];
+                    document.getElementById('id_street_area').value = area;
+                    
+                    // House / Flat No is required by form, but geocoding rarely gives it precisely in India
+                    const house = data.address.house_number || data.address.building || '';
+                    if (house) {
+                        document.getElementById('id_house_flat_no').value = house;
+                    } else if (!document.getElementById('id_house_flat_no').value) {
+                        // Pre-fill with a placeholder so it passes HTML validation and prompts the user
+                        document.getElementById('id_house_flat_no').value = 'N/A';
+                    }
+
+                    if (data.address.city || data.address.town || data.address.county || data.address.state_district) {
+                        document.getElementById('id_city').value = data.address.city || data.address.town || data.address.county || data.address.state_district;
+                    }
+                    if (data.address.state) {
+                        document.getElementById('id_state').value = data.address.state;
+                    }
+                    if (data.address.postcode) {
+                        document.getElementById('id_pin_code').value = data.address.postcode;
+                    }
+                    
+                    // If name is empty, focus on it
+                    if (!document.getElementById('id_recipient_name').value) {
+                        document.getElementById('id_recipient_name').focus();
+                    }
+                }
+            })
+            .catch(err => {
+                status.innerText = 'Could not resolve address automatically. Please enter manually.';
+            });
+    }, () => {
+        status.innerText = 'Location permission denied. Please enter manually.';
+    });
+});
+</script>
+{% endblock %}

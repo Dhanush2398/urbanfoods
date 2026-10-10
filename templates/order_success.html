@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<main style="padding-top: 150px; padding-bottom: 100px; min-height: 80vh;">
+    <div class="container text-center animate-fade-up">
+        <div class="mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center bg-success text-white rounded-circle" style="width: 100px; height: 100px;">
+                <i class="fa-solid fa-check fs-1"></i>
+            </div>
+        </div>
+        <h1 class="fw-extrabold text-navy mb-3">Order Placed Successfully!</h1>
+        <p class="text-muted fs-5 mb-4">Thank you for choosing UrbanFoods. Your order number is <span class="fw-bold text-orange">#{{ order.id }}</span>.</p>
+        
+        <div class="card card-qb mx-auto text-start p-4 mb-5" style="max-width: 600px;">
+            <h5 class="fw-bold mb-3 border-bottom pb-2">Order Details</h5>
+            <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Restaurant</span>
+                <span class="fw-semibold">{{ order.restaurant.restaurant_name }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Status</span>
+                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">Pending Approval</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Total Paid</span>
+                <span class="fw-semibold">&#8377;{{ order.total_amount }}</span>
+            </div>
+            
+            {% if order.provider_reference_id %}
+            <div class="d-flex justify-content-between mt-3 pt-2 border-top">
+                <span class="text-muted small">Payment Reference</span>
+                <span class="fw-semibold small text-muted">{{ order.provider_reference_id }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div>
+            <a href="{% url 'base:order_detail' order.id %}" class="btn btn-outline-qb px-4 py-2 me-2">Track Order</a>
+            <a href="{% url 'base:home' %}" class="btn btn-primary-qb px-4 py-2">Back to Home</a>
+        </div>
+    </div>
+</main>
+{% endblock %}

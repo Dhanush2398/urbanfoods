@@ -146,9 +146,9 @@
                 UrbanFoods
             </a>
             
-            <div class="d-none d-lg-flex align-items-center ms-4 bg-light rounded-pill px-3 py-2 cursor-pointer border hover-shadow-sm transition-fast">
+            <div id="navbar-location-btn" class="d-none d-lg-flex align-items-center ms-4 bg-light rounded-pill px-3 py-2 cursor-pointer border hover-shadow-sm transition-fast" onclick="detectLocation()">
                 <i class="fa-solid fa-location-dot text-orange me-2"></i>
-                <span class="text-truncate" style="max-width: 150px; font-size: 0.9rem;">Malleswaram, MH</span>
+                <span id="navbar-location-text" class="text-truncate" style="max-width: 150px; font-size: 0.9rem;">Fetching location...</span>
                 <i class="fa-solid fa-chevron-down ms-2 text-muted small"></i>
             </div>
 
@@ -165,13 +165,21 @@
   {% if user.is_staff %}
   <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
     <a class="btn btn-outline-qb rounded-pill px-4" href="{% url 'base:dashboard' %}">
-      <i class="fa-solid fa-gauge me-1"></i> Dashboard
+      <i class="fa-solid fa-gauge me-1"></i> Admin Dashboard
+    </a>
+  </li>
+  {% elif user.restaurant %}
+  <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+    <a class="btn btn-outline-qb rounded-pill px-4" href="{% url 'base:restaurant_dashboard' %}">
+      <i class="fa-solid fa-shop me-1"></i> Restaurant Dashboard
     </a>
   </li>
   {% endif %}
   <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
-    <a class="btn btn-outline-qb rounded-pill px-4" href="#">
-      <i class="fa-regular fa-user me-1"></i> Profile
+    <a href="{% url 'base:profile' %}" class="d-flex align-items-center text-decoration-none" title="My Profile">
+      <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-orange fw-bold border border-2" style="width:40px; height:40px; border-color:var(--qb-orange) !important;">
+        {{ user.first_name|first|default:user.username|first|upper }}
+      </div>
     </a>
   </li>
   <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
@@ -183,9 +191,11 @@
   </li>
 {% endif %}
                     <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
-                        <a class="nav-link position-relative px-3" href="cart.html">
+                        <a class="nav-link position-relative px-3" href="{% url 'base:view_cart' %}">
                             <i class="fa-solid fa-cart-shopping fs-5"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-orange" style="margin-left: -10px; margin-top: 5px;">3</span>
+                            {% if user.is_authenticated and user.cart.items.count > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-orange" style="margin-left: -10px; margin-top: 5px;">{{ user.cart.items.count }}</span>
+                            {% endif %}
                         </a>
                     </li>
                 </ul>
@@ -281,5 +291,54 @@
     <!-- Custom JS -->
     <script src="{% static 'assets/js/main.js' %}"></script>
     <script src="{% static 'assets/js/homepage-content.js' %}"></script>
+    <script>
+        function updateLocationText(text) {
+            const el = document.getElementById('navbar-location-text');
+            if(el) el.innerText = text;
+        }
+
+        function detectLocation() {
+            updateLocationText("Detecting...");
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                let area = data.address.suburb || data.address.neighbourhood || data.address.residential || data.address.city_district || data.address.village || data.address.town || data.address.city || data.address.county || data.address.state_district || "Unknown Location";
+                                let state = data.address.state || data.address.region || "";
+                                let displayName = area;
+                                if(state) displayName += ", " + state.substring(0, 2).toUpperCase();
+                                
+                                updateLocationText(displayName);
+                                localStorage.setItem("urbanfoods_location", displayName);
+                            })
+                            .catch(err => {
+                                console.error(err);
+                                updateLocationText("Location not found");
+                            });
+                    },
+                    (error) => {
+                        updateLocationText("Select Location");
+                        console.error(error);
+                    }
+                );
+            } else {
+                updateLocationText("Location not supported");
+            }
+        }
+
+        // Check if we have a saved location on load
+        document.addEventListener("DOMContentLoaded", () => {
+            const savedLoc = localStorage.getItem("urbanfoods_location");
+            if (savedLoc) {
+                updateLocationText(savedLoc);
+            } else {
+                updateLocationText("Select Location");
+            }
+        });
+    </script>
 </body>
 </html>

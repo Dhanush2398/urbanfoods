@@ -1,121 +1,105 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile | UrbanFoods</title>
-    <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/variables.css">
-    <link rel="stylesheet" href="assets/css/global.css">
-    <link rel="stylesheet" href="assets/css/components.css">
-    <style>
-        body { background-color: var(--qb-light-gray); }
-        .dashboard-container { display: flex; min-height: calc(100vh - 76px); padding-top: 76px; }
-        .sidebar { width: 280px; background: var(--qb-white); border-right: 1px solid var(--qb-border); padding: 30px 20px; position: fixed; height: calc(100vh - 76px); overflow-y: auto; z-index: 100; transition: transform var(--qb-transition-fast); }
-        .main-content { flex-grow: 1; margin-left: 280px; padding: 40px; }
-        .sidebar-link { display: flex; align-items: center; padding: 12px 20px; color: var(--qb-text-muted); text-decoration: none; border-radius: var(--qb-radius-md); margin-bottom: 5px; font-weight: 600; transition: all var(--qb-transition-fast); }
-        .sidebar-link i { width: 24px; font-size: 1.1rem; margin-right: 10px; }
-        .sidebar-link:hover, .sidebar-link.active { background: var(--qb-orange-light); color: var(--qb-orange); }
-        @media (max-width: 991px) { .sidebar { transform: translateX(-100%); } .sidebar.show { transform: translateX(0); } .main-content { margin-left: 0; padding: 20px; } }
-        
-        .profile-img-edit { position: relative; display: inline-block; }
-        .profile-img-edit .edit-btn { position: absolute; bottom: 0; right: 0; width: 35px; height: 35px; border-radius: 50%; background: var(--qb-orange); color: white; border: 2px solid white; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-    </style>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg fixed-top bg-white shadow-sm py-3 border-bottom z-3">
-        <div class="container-fluid px-4">
-            <button class="btn btn-light d-lg-none me-3" type="button" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
-            <a class="navbar-brand d-flex align-items-center fw-extrabold text-navy m-0" href="index.html">
-                <img src="assets/images/logo.svg" alt="UrbanFoods Logo" width="30" height="30" class="me-2"> UrbanFoods
-            </a>
-        </div>
-    </nav>
-
-    <div class="dashboard-container">
-        <!-- Sidebar -->
-        <div class="sidebar shadow-sm" id="sidebar">
-            <nav class="nav flex-column">
-                <a href="dashboard.html" class="sidebar-link"><i class="fa-solid fa-house"></i> Dashboard</a>
-                <a href="profile.html" class="sidebar-link active"><i class="fa-solid fa-user"></i> My Profile</a>
-                <a href="orders.html" class="sidebar-link"><i class="fa-solid fa-clipboard-list"></i> Orders</a>
-                <a href="wishlist.html" class="sidebar-link"><i class="fa-solid fa-heart"></i> Favorites</a>
-                <a href="offers.html" class="sidebar-link"><i class="fa-solid fa-ticket"></i> Coupons</a>
-                <a href="notifications.html" class="sidebar-link"><i class="fa-solid fa-bell"></i> Notifications</a>
-            </nav>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <h2 class="fw-extrabold text-navy mb-4 animate-fade-up">My Profile</h2>
-
-            <div class="card card-qb p-4 mb-4 animate-fade-up delay-100">
-                <div class="row align-items-center mb-4">
-                    <div class="col-auto">
-                        <div class="profile-img-edit">
-                            <img src="https://i.pravatar.cc/150?img=11" class="rounded-circle border border-3 border-light shadow-sm" width="100" height="100">
-                            <div class="edit-btn"><i class="fa-solid fa-camera small"></i></div>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <h4 class="fw-bold mb-1">Karthik</h4>
-                        <p class="text-muted mb-0">Premium Member Since 2024</p>
-                    </div>
+{% extends "customer_profile_base.html" %}
+{% block profile_content %}
+<h2 class="fw-extrabold text-navy mb-4 animate-fade-up">My Profile</h2>
+<div class="card card-qb p-4 mb-4 animate-fade-up delay-100">
+    <div class="row align-items-center mb-4 pb-4 border-bottom">
+        <div class="col-auto">
+            <div class="profile-img-edit">
+                <div class="rounded-circle border border-3 border-light shadow-sm bg-light d-flex align-items-center justify-content-center text-orange fw-bold fs-1" style="width:100px; height:100px;">
+                    {{ request.user.first_name|first|default:request.user.username|first|upper }}
                 </div>
-
-                <form>
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">First Name</label>
-                            <input type="text" class="form-control form-control-qb" value="John">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Last Name</label>
-                            <input type="text" class="form-control form-control-qb" value="Doe">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Email Address</label>
-                            <input type="email" class="form-control form-control-qb" value="john.doe@example.com">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Phone Number</label>
-                            <input type="text" class="form-control form-control-qb" value="+1 (555) 123-4567">
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <button type="button" class="btn btn-primary-qb px-4">Save Changes</button>
-                    </div>
-                </form>
             </div>
-
-            <div class="card card-qb p-4 animate-fade-up delay-200">
-                <h5 class="fw-bold mb-4">Change Password</h5>
-                <form>
-                    <div class="row g-4 max-w-lg">
-                        <div class="col-12">
-                            <label class="form-label fw-semibold">Current Password</label>
-                            <input type="password" class="form-control form-control-qb">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">New Password</label>
-                            <input type="password" class="form-control form-control-qb">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Confirm Password</label>
-                            <input type="password" class="form-control form-control-qb">
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <button type="button" class="btn btn-outline-qb px-4">Update Password</button>
-                    </div>
-                </form>
-            </div>
-
+        </div>
+        <div class="col">
+            <h4 class="fw-bold mb-1">{{ request.user.get_full_name|default:request.user.username }}</h4>
+            <p class="text-muted mb-0"><i class="fa fa-phone me-2 text-success"></i>{{ request.user.username }}</p>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-primary" id="toggleEditBtn" onclick="toggleEditMode()">
+                <i class="fa fa-edit me-2"></i>Edit Profile
+            </button>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script> document.getElementById('sidebarToggle').addEventListener('click', function() { document.getElementById('sidebar').classList.toggle('show'); }); </script>
-</body>
-</html>
+
+    <!-- View Mode -->
+    <div id="profileViewMode">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label class="form-label text-muted small text-uppercase fw-bold mb-1">First Name</label>
+                <p class="fs-5 fw-semibold">{{ request.user.first_name|default:"Not Provided" }}</p>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label text-muted small text-uppercase fw-bold mb-1">Last Name</label>
+                <p class="fs-5 fw-semibold">{{ request.user.last_name|default:"Not Provided" }}</p>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label text-muted small text-uppercase fw-bold mb-1">Email Address</label>
+                <p class="fs-5 fw-semibold">{{ request.user.email|default:"Not Provided" }}</p>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label text-muted small text-uppercase fw-bold mb-1">Phone Number</label>
+                <p class="fs-5 fw-semibold">{{ request.user.username }} <i class="fa fa-check-circle text-success ms-1" title="Verified"></i></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Mode -->
+    <div id="profileEditMode" class="d-none">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">First Name</label>
+                    {{ form.first_name }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Last Name</label>
+                    {{ form.last_name }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Email Address</label>
+                    {{ form.email }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Phone Number</label>
+                    <input type="text" class="form-control form-control-qb bg-light" value="{{ request.user.username }}" disabled>
+                    <small class="text-muted">Phone number cannot be changed.</small>
+                </div>
+            </div>
+            <div class="mt-4 d-flex gap-3">
+                <button type="submit" class="btn btn-primary-qb px-4">Save Changes</button>
+                <button type="button" class="btn btn-light px-4" onclick="toggleEditMode()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleEditMode() {
+    const viewMode = document.getElementById('profileViewMode');
+    const editMode = document.getElementById('profileEditMode');
+    const toggleBtn = document.getElementById('toggleEditBtn');
+    
+    if (viewMode.classList.contains('d-none')) {
+        // Switch to View Mode
+        viewMode.classList.remove('d-none');
+        editMode.classList.add('d-none');
+        toggleBtn.classList.remove('d-none');
+    } else {
+        // Switch to Edit Mode
+        viewMode.classList.add('d-none');
+        editMode.classList.remove('d-none');
+        toggleBtn.classList.add('d-none'); // Hide the edit button while editing
+    }
+}
+
+// If form has errors (from Django), show edit mode automatically
+document.addEventListener('DOMContentLoaded', function() {
+    // Basic check if there are error messages rendered inside the form inputs
+    const hasErrors = document.querySelector('.errorlist') !== null;
+    if(hasErrors) {
+        toggleEditMode();
+    }
+});
+</script>
+{% endblock %}

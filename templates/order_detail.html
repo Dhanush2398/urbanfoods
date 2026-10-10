@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block content %}
+<main style="padding-top: 120px; padding-bottom: 80px; min-height: 80vh;">
+    <div class="container animate-fade-up">
+        {% for m in messages %}
+        <div class="alert alert-{% if m.tags == 'error' %}danger{% else %}{{ m.tags }}{% endif %} py-2">{{ m }}</div>
+        {% endfor %}
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-extrabold text-navy mb-0">Order #{{ order.id }}</h2>
+            <a href="{% url 'base:home' %}" class="btn btn-outline-qb"><i class="fa-solid fa-arrow-left me-1"></i>Back</a>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-8 mb-4">
+                <div class="card card-qb p-4 mb-4">
+                    <h5 class="fw-bold mb-3 border-bottom pb-2">Order Summary</h5>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Restaurant</span>
+                        <span class="fw-semibold">{{ order.restaurant.restaurant_name }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Order Date</span>
+                        <span class="fw-semibold">{{ order.created_at|date:"d M Y, h:i A" }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Delivery Address</span>
+                        <span class="fw-semibold text-end" style="max-width:60%;">{{ order.delivery_address_text }}</span>
+                    </div>
+                    
+                    <h6 class="fw-bold mt-4 mb-3">Items Ordered</h6>
+                    <div class="table-responsive">
+                        <table class="table text-muted align-middle">
+                            <tbody>
+                                {% for item in order.items.all %}
+                                <tr>
+                                    <td>
+                                        <span class="badge-veg me-1"></span>
+                                        <span class="fw-semibold text-navy">{{ item.item_name }}</span>
+                                        <br>
+                                        <small>{{ item.quantity }} x &#8377;{{ item.price }}</small>
+                                        <small class="d-block" style="font-size: 0.7rem;">Taxable: &#8377;{{ item.taxable_value }} | CGST: &#8377;{{ item.cgst_amount }} | SGST: &#8377;{{ item.sgst_amount }}</small>
+                                    </td>
+                                    <td class="text-end fw-semibold text-navy">&#8377;{{ item.total }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="border-top pt-3 mt-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Taxable Subtotal</span>
+                            <span class="fw-semibold">&#8377;{{ order.taxable_subtotal }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">CGST</span>
+                            <span class="fw-semibold">&#8377;{{ order.total_cgst }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">SGST</span>
+                            <span class="fw-semibold">&#8377;{{ order.total_sgst }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Delivery Fee</span>
+                            <span class="fw-semibold">&#8377;{{ order.delivery_fee }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card card-qb p-4 mb-4">
+                    <h5 class="fw-bold mb-3 border-bottom pb-2">Payment Info</h5>
+                    <div class="d-flex justify-content-between align-items-end mb-3">
+                        <span class="text-muted">Total Amount</span>
+                        <span class="fw-extrabold text-orange fs-4">&#8377;{{ order.total_amount }}</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <span class="d-block text-muted small mb-1">Payment Method</span>
+                        <span class="fw-semibold">Online</span>
+                    </div>
+                    <div class="mb-3">
+                        <span class="d-block text-muted small mb-1">Payment Status</span>
+                        {% if order.payment_status == 'success' %}
+                            <span class="badge bg-success w-100 py-2 fs-6"><i class="fa-solid fa-check-circle me-1"></i> Paid Successfully</span>
+                            {% if order.provider_reference_id %}
+                            <small class="d-block text-muted mt-2 text-center">Ref: {{ order.provider_reference_id }}</small>
+                            {% endif %}
+                        {% elif order.payment_status == 'pending' %}
+                            <span class="badge bg-warning text-dark w-100 py-2 fs-6"><i class="fa-solid fa-clock me-1"></i> Payment Pending</span>
+                        {% else %}
+                            <span class="badge bg-danger w-100 py-2 fs-6"><i class="fa-solid fa-times-circle me-1"></i> Payment Failed</span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if order.payment_status != 'success' %}
+                        <form action="{% url 'base:checkout' %}" method="post" class="mt-4">
+                            {% csrf_token %}
+                            <!-- Here we would ideally have a direct retry endpoint. For simplicity, we can let them checkout again if the cart was restored, or just add a direct retry button. Let's add a direct retry button that hits a retry view, but since we didn't build one, they can't retry the EXACT order easily without a view. I'll just show the status for now. -->
+                            <p class="text-muted small text-center">To retry payment, please create a new cart.</p>
+                        </form>
+                    {% endif %}
+                </div>
+                
+                <div class="card card-qb p-4">
+                    <h5 class="fw-bold mb-3 border-bottom pb-2">Order Status</h5>
+                    <span class="badge bg-secondary w-100 py-2 fs-6">{{ order.get_status_display }}</span>
+                    <p class="text-muted small mt-2 text-center mb-0">Food preparation and delivery status.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Redirecting to Payment...</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: #f8f9fa; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #F35C08; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="loader"></div>
+    <h3>Redirecting to Secure Payment Gateway...</h3>
+    <p>Please do not refresh or close this page.</p>
+    <script>
+        setTimeout(function() {
+            window.location.href = "{{ outputurl|safe }}";
+        }, 1500);
+    </script>
+</body>
+</html>

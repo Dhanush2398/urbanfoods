@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    body { background-color: var(--qb-light-gray); }
+    .dashboard-container { display: flex; min-height: calc(100vh - 76px); padding-top: 76px; }
+    .sidebar { width: 280px; background: var(--qb-white); border-right: 1px solid var(--qb-border); padding: 30px 20px; position: fixed; height: calc(100vh - 76px); overflow-y: auto; z-index: 100; transition: transform var(--qb-transition-fast); }
+    .main-content { flex-grow: 1; margin-left: 280px; padding: 40px; }
+    .sidebar-link { display: flex; align-items: center; padding: 12px 20px; color: var(--qb-text-muted); text-decoration: none; border-radius: var(--qb-radius-md); margin-bottom: 5px; font-weight: 600; transition: all var(--qb-transition-fast); }
+    .sidebar-link i { width: 24px; font-size: 1.1rem; margin-right: 10px; }
+    .sidebar-link:hover, .sidebar-link.active { background: var(--qb-orange-light); color: var(--qb-orange); }
+    @media (max-width: 991px) { .sidebar { transform: translateX(-100%); } .sidebar.show { transform: translateX(0); } .main-content { margin-left: 0; padding: 20px; } }
+</style>
+<div class="dashboard-container">
+    <div class="sidebar shadow-sm" id="sidebar">
+        <nav class="nav flex-column">
+            <a href="{% url 'base:profile' %}" class="sidebar-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}"><i class="fa-solid fa-user"></i> My Profile</a>
+            <a href="{% url 'base:manage_addresses' %}" class="sidebar-link {% if 'address' in request.resolver_match.url_name %}active{% endif %}"><i class="fa-solid fa-location-dot"></i> Addresses</a>
+            <a href="{% url 'base:wallet' %}" class="sidebar-link {% if request.resolver_match.url_name == 'wallet' %}active{% endif %}"><i class="fa-solid fa-wallet"></i> My Wallet</a>
+            <a href="{% url 'base:order_history' %}" class="sidebar-link {% if 'order' in request.resolver_match.url_name %}active{% endif %}"><i class="fa-solid fa-clipboard-list"></i> Order History</a>
+            <a href="{% url 'base:logout' %}" class="sidebar-link text-danger"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+        </nav>
+    </div>
+    <div class="main-content">
+        <button class="btn btn-light d-lg-none mb-3" type="button" id="sidebarToggle"><i class="fa-solid fa-bars"></i> Menu</button>
+        {% for m in messages %}
+        <div class="alert alert-{% if m.tags == 'error' %}danger{% else %}{{ m.tags }}{% endif %} py-2">{{ m }}</div>
+        {% endfor %}
+        {% block profile_content %}{% endblock %}
+    </div>
+</div>
+<script> document.getElementById('sidebarToggle').addEventListener('click', function() { document.getElementById('sidebar').classList.toggle('show'); }); </script>
+{% endblock %}

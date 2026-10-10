@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h2>Ledger Entry Details</h2>
+            <a href="{% url 'base:admin_financial_dashboard' %}" class="btn btn-outline-secondary">Back to Financials</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white pt-4 pb-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Transaction Ref: {{ entry.reference }}</h5>
+                    <span class="badge {% if entry.direction == 'credit' %}bg-success{% else %}bg-danger{% endif %} fs-6">
+                        {{ entry.get_transaction_type_display }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-sm-6 mb-3 mb-sm-0">
+                            <h6 class="text-muted mb-1">Date</h6>
+                            <p class="mb-0 fw-bold">{{ entry.created_at|date:"M d, Y h:i A" }}</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <h6 class="text-muted mb-1">Status</h6>
+                            <p class="mb-0 fw-bold">{{ entry.get_status_display|default:entry.status|title }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if order %}
+                    <div class="alert alert-light border mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Associated Order #{{ order.id }}</h6>
+                                <p class="mb-0 small text-muted">Customer: {{ order.user.username }} | Restaurant: {{ order.restaurant.restaurant_name }}</p>
+                            </div>
+                            <!-- Assuming you might have an admin order detail view in future -->
+                            <span class="badge bg-secondary">{{ order.get_status_display }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <h5 class="fw-bold mb-3 mt-4">Financial Breakdown</h5>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <td class="text-muted w-50">Gross Amount (Paid by Customer)</td>
+                                    <td class="fw-bold">₹{{ entry.amount }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Delivery Fee</td>
+                                    <td>₹{{ entry.delivery_fee }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Taxes (GST)</td>
+                                    <td>₹{{ entry.taxes }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Discounts Applied</td>
+                                    <td>-₹{{ entry.discounts }}</td>
+                                </tr>
+                                <tr class="bg-light">
+                                    <td class="fw-bold">Eligible Food Subtotal</td>
+                                    <td class="fw-bold">₹{{ entry.eligible_food_subtotal }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Platform Commission Rate</td>
+                                    <td>{{ entry.platform_commission_rate }}%</td>
+                                </tr>
+                                <tr class="table-danger">
+                                    <td class="fw-bold text-danger">Platform Commission Deducted</td>
+                                    <td class="fw-bold text-danger">₹{{ entry.platform_commission }}</td>
+                                </tr>
+                                <tr class="table-success">
+                                    <td class="fw-bold text-success">Net Restaurant Earnings Allocated</td>
+                                    <td class="fw-bold text-success">₹{{ entry.restaurant_earnings }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6 class="text-muted mb-2">Settlement Status</h6>
+                        {% if entry.settled_at %}
+                            <p class="mb-0 text-success"><i class="fas fa-check-circle me-1"></i> Funds moved to Restaurant's Available Balance on {{ entry.settled_at|date:"M d, Y h:i A" }}</p>
+                        {% else %}
+                            <p class="mb-0 text-warning"><i class="fas fa-clock me-1"></i> Funds are pending (waiting for order delivery/completion)</p>
+                        {% endif %}
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

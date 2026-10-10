@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice #{{ order.id }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            color: #333;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #ff6b00;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            color: #ff6b00;
+            margin: 0;
+            font-size: 28px;
+        }
+        .info-row {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .info-col {
+            width: 48%;
+            display: inline-block;
+            vertical-align: top;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .table th, .table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .table th {
+            background-color: #f8f9fa;
+            color: #ff6b00;
+            font-weight: bold;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .totals {
+            width: 50%;
+            margin-left: 50%;
+        }
+        .totals-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .totals-table td {
+            padding: 5px;
+        }
+        .totals-table .total-row td {
+            border-top: 2px solid #333;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #777;
+            font-size: 12px;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+        .text-orange {
+            color: #ff6b00;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>URBAN FOODS</h1>
+        <p style="margin: 5px 0;">Tax Invoice / Bill of Supply</p>
+    </div>
+
+    <div class="info-row">
+        <div class="info-col">
+            <strong class="text-orange">Billed To:</strong><br>
+            {{ customer.get_full_name|default:customer.username }}<br>
+            {{ order.delivery_address_text }}
+        </div>
+        <div class="info-col text-right">
+            <strong class="text-orange">Restaurant:</strong><br>
+            <strong>{{ restaurant.restaurant_name }}</strong><br>
+            {{ restaurant.address }}, {{ restaurant.city }}<br>
+            {% if restaurant.gstin %}GSTIN: {{ restaurant.gstin }}{% endif %}
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-col">
+            <strong>Order ID:</strong> #{{ order.id }}<br>
+            <strong>Order Date:</strong> {{ order.created_at|date:"d M Y, h:i A" }}<br>
+        </div>
+        <div class="info-col text-right">
+            <strong>Payment Method:</strong> Online Payment<br>
+            <strong>Payment Status:</strong> {{ order.get_payment_status_display }}
+            {% if order.transaction_id %}<br><strong>Txn ID:</strong> {{ order.transaction_id }}{% endif %}
+        </div>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item Description</th>
+                <th>Qty</th>
+                <th class="text-right">Unit Price</th>
+                <th class="text-right">Taxable Val</th>
+                <th class="text-right">CGST</th>
+                <th class="text-right">SGST</th>
+                <th class="text-right">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items.all %}
+            <tr>
+                <td>
+                    <strong>{{ item.item_name }}</strong><br>
+                    <small>({{ item.serving_unit }})</small>
+                </td>
+                <td>{{ item.quantity }}</td>
+                <td class="text-right">₹{{ item.price }}</td>
+                <td class="text-right">₹{{ item.taxable_value }}</td>
+                <td class="text-right">
+                    ₹{{ item.cgst_amount }}<br>
+                    <small>({{ item.cgst_rate }}%)</small>
+                </td>
+                <td class="text-right">
+                    ₹{{ item.sgst_amount }}<br>
+                    <small>({{ item.sgst_rate }}%)</small>
+                </td>
+                <td class="text-right">₹{{ item.total }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <table class="totals-table">
+            <tr>
+                <td>Taxable Subtotal:</td>
+                <td class="text-right">₹{{ order.taxable_subtotal }}</td>
+            </tr>
+            <tr>
+                <td>Total CGST:</td>
+                <td class="text-right">₹{{ order.total_cgst }}</td>
+            </tr>
+            <tr>
+                <td>Total SGST:</td>
+                <td class="text-right">₹{{ order.total_sgst }}</td>
+            </tr>
+            <tr>
+                <td>Delivery Fee:</td>
+                <td class="text-right">₹{{ order.delivery_fee }}</td>
+            </tr>
+            {% if order.wallet_applied > 0 %}
+            <tr>
+                <td>Wallet Applied:</td>
+                <td class="text-right text-danger">-₹{{ order.wallet_applied }}</td>
+            </tr>
+            {% endif %}
+            <tr class="total-row">
+                <td>Grand Total:</td>
+                <td class="text-right">₹{{ order.total_amount }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        <p>Thank you for ordering with Urban Foods!</p>
+        <p>This is a computer generated invoice and does not require a physical signature.</p>
+    </div>
+</body>
+</html>

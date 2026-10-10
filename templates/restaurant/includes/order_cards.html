@@ -1,0 +1,58 @@
+{% load static %}
+<div class="row">
+  {% for o in orders %}
+    {% if o.status == status_filter %}
+    <div class="col-xl-4 col-md-6 mb-4">
+      <div class="card h-100 border shadow-sm">
+        <div class="card-header border-bottom pb-2 d-flex justify-content-between align-items-center">
+          <h5 class="card-title m-0 fw-bold">Order #{{ o.id }}</h5>
+          <span class="badge {% if o.status == 'paid' %}bg-warning text-dark{% elif o.status == 'accepted' %}bg-info{% elif o.status == 'preparing' %}bg-primary{% else %}bg-success{% endif %}">{{ o.get_status_display }}</span>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <small class="text-muted d-block"><i class="fa fa-clock me-1"></i> {{ o.created_at|date:"d M Y, h:i A" }}</small>
+            <small class="text-muted d-block mt-1"><i class="fa fa-user me-1"></i> {{ o.user.first_name|default:o.user.username }}</small>
+            {% if o.address %}
+            <small class="text-muted d-block mt-1"><i class="fa fa-phone me-1"></i> {{ o.address.phone_number }}</small>
+            {% endif %}
+          </div>
+          
+          <div class="order-items bg-light p-2 rounded mb-3" style="max-height: 150px; overflow-y: auto;">
+            <ul class="list-unstyled m-0 small">
+              {% for item in o.items.all %}
+              <li class="d-flex justify-content-between mb-1">
+                <span><span class="fw-bold">{{ item.quantity }}x</span> {{ item.food.name }}</span>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+          
+          <div class="d-flex justify-content-between align-items-center border-top pt-2">
+            <span class="fw-bold">Total Bill:</span>
+            <span class="fw-bold text-success">₹{{ o.total_amount }}</span>
+          </div>
+        </div>
+        <div class="card-footer bg-white border-top-0 pt-0">
+          <div class="d-flex gap-2">
+            {% if action %}
+            <form method="post" action="{% url 'base:update_order_status' o.id %}" class="flex-grow-1">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="{{ next_status|default:'accepted' }}">
+                <button type="submit" class="btn btn-primary w-100">{{ action }}</button>
+            </form>
+            {% endif %}
+            {% if reject %}
+            <form method="post" action="{% url 'base:update_order_status' o.id %}" class="flex-grow-1">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="cancelled">
+                <button type="submit" class="btn btn-outline-danger w-100">Reject</button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  {% endfor %}
+  
+</div>

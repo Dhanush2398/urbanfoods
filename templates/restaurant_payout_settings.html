@@ -1,0 +1,207 @@
+{% extends "restaurant/base.html" %}
+{% block title %}Withdrawals - Urban Foods{% endblock %}
+
+{% block content %}
+<div class="content-body">
+<div class="container-fluid">
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-navy mb-0">Withdrawals</h3>
+</div>
+
+<div class="row">
+    <!-- Request Withdrawal Form -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-white pt-4 pb-3 border-0">
+                <h5 class="fw-bold mb-0">Request Withdrawal</h5>
+            </div>
+            <div class="card-body">
+                {% if can_withdraw %}
+                    {% if not payout_ready %}
+                        <div class="alert alert-warning rounded-3 mb-0">
+                            <i class="fa fa-exclamation-triangle me-2"></i> Please configure your payout settings below before requesting a withdrawal.
+                        </div>
+                    {% else %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">Withdrawal Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" step="0.01" class="form-control" name="amount" required max="{{ earnings.available_balance }}">
+                                </div>
+                                <small class="text-muted mt-1 d-block">Max available: ₹{{ earnings.available_balance }}</small>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label text-muted small">Destination</label>
+                                <p class="mb-0 small bg-light p-2 rounded border">{{ payout_snapshot }}</p>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 rounded-pill shadow-sm" {% if earnings.available_balance <= 0 %}disabled{% endif %}>Submit Request</button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fa fa-calendar-check text-success fs-1 mb-3"></i>
+                        <h6 class="fw-bold">Weekly Request Submitted</h6>
+                        <p class="text-muted small">You have already submitted a withdrawal request this week. You can submit your next request in 7 days from your previous request.</p>
+                        {% if recent_withdrawal %}
+                            <small class="text-muted d-block mt-3 border-top pt-2">Last request: {{ recent_withdrawal.created_at|date:"M d, Y" }}</small>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdrawal History -->
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-white pt-4 pb-3 border-0 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0">Withdrawal History</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">ID</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Notes / Ref</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for w in withdrawals %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-muted">#{{ w.id }}</td>
+                                <td>{{ w.created_at|date:"M d, Y" }}</td>
+                                <td class="fw-bold">₹{{ w.amount }}</td>
+                                <td>
+                                    <span class="badge {% if w.status == 'paid' %}bg-success{% elif w.status == 'rejected' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                        {{ w.status|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if w.status == 'paid' %}
+                                        <small class="text-muted d-block">Ref: {{ w.payout_reference }}</small>
+                                    {% elif w.status == 'rejected' %}
+                                        <small class="text-danger d-block">Reason: {{ w.rejection_reason }}</small>
+                                    {% endif %}
+                                    {% if w.admin_notes %}
+                                        <small class="text-muted d-block">{{ w.admin_notes }}</small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">No withdrawals requested yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4 animate-fade-up">
+    <div class="card-body p-4">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="mb-4 pb-4 border-bottom">
+                <label class="form-label fw-bold">Preferred Payout Method</label>
+                <div class="d-flex gap-4 mt-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="payout_method" id="methodBank" value="bank" {% if settings.payout_method == 'bank' %}checked{% endif %} onchange="toggleSections()">
+                        <label class="form-check-label fw-semibold" for="methodBank">Bank Transfer</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="payout_method" id="methodUPI" value="upi" {% if settings.payout_method == 'upi' %}checked{% endif %} onchange="toggleSections()">
+                        <label class="form-check-label fw-semibold" for="methodUPI">UPI ID</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="payout_method" id="methodQR" value="qr" {% if settings.payout_method == 'qr' %}checked{% endif %} onchange="toggleSections()">
+                        <label class="form-check-label fw-semibold" for="methodQR">QR Code</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bank Settings -->
+            <div id="bankSection" class="payout-section {% if settings.payout_method != 'bank' %}d-none{% endif %}">
+                <h5 class="fw-bold mb-3">Bank Details</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Account Holder Name</label>
+                        <input type="text" class="form-control" name="account_holder_name" value="{{ settings.account_holder_name|default:'' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Bank Name</label>
+                        <input type="text" class="form-control" name="bank_name" value="{{ settings.bank_name|default:'' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Account Number</label>
+                        <input type="password" class="form-control" name="account_number" value="{{ settings.account_number|default:'' }}" id="acct_input">
+                        <div class="form-check mt-1">
+                            <input type="checkbox" class="form-check-input" id="showAcct" onchange="document.getElementById('acct_input').type = this.checked ? 'text' : 'password'">
+                            <label class="form-check-label small" for="showAcct">Show account number</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">IFSC Code</label>
+                        <input type="text" class="form-control text-uppercase" name="ifsc_code" value="{{ settings.ifsc_code|default:'' }}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- UPI Settings -->
+            <div id="upiSection" class="payout-section {% if settings.payout_method != 'upi' %}d-none{% endif %}">
+                <h5 class="fw-bold mb-3">UPI Details</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">UPI ID</label>
+                        <input type="text" class="form-control" name="upi_id" value="{{ settings.upi_id|default:'' }}" placeholder="e.g. yourname@upi">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Account Holder Name</label>
+                        <input type="text" class="form-control" name="upi_account_holder_name" value="{{ settings.upi_account_holder_name|default:'' }}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- QR Settings -->
+            <div id="qrSection" class="payout-section {% if settings.payout_method != 'qr' %}d-none{% endif %}">
+                <h5 class="fw-bold mb-3">QR Code Details</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Upload QR Code</label>
+                        <input type="file" class="form-control" name="qr_code_image" accept="image/*">
+                        {% if settings.qr_code_image %}
+                        <div class="mt-3">
+                            <p class="small text-success fw-bold"><i class="fa fa-check-circle me-1"></i>QR Code saved</p>
+                            <img src="{{ settings.qr_code_image.url }}" alt="QR Code" class="img-thumbnail" style="max-height: 200px;">
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <button type="submit" class="btn btn-primary px-5 rounded-pill shadow-sm">Save Payout Settings</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleSections() {
+    document.querySelectorAll('.payout-section').forEach(el => el.classList.add('d-none'));
+    const selected = document.querySelector('input[name="payout_method"]:checked').value;
+    document.getElementById(selected + 'Section').classList.remove('d-none');
+}
+</script>
+</div>
+</div>
+{% endblock %}
