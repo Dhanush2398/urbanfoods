@@ -41,6 +41,8 @@ class RestaurantProfile(models.Model):
     pan_card = models.FileField(upload_to="restaurant_docs/pan/", blank=True)
     gst_number = models.CharField(max_length=15, blank=True)
     gst_certificate = models.FileField(upload_to="restaurant_docs/gst/", blank=True)
+    latitude = models.DecimalField(max_digits=10,decimal_places=7,null=True,blank=True)
+    longitude = models.DecimalField(max_digits=10,decimal_places=7,null=True,blank=True)
 
     status = models.CharField(max_length=12, choices=STATUS_CHOICES, default=INCOMPLETE)
     rejection_reason = models.TextField(blank=True)

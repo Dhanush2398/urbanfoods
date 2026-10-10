@@ -1,58 +1,590 @@
 <!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>Documents | UrbanFoods</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head><body class="bg-light">
-<div class="container py-5" style="max-width:640px">
-  <div class="card shadow-sm"><div class="card-body p-4">
-    <h4 class="mb-1">{{ profile.restaurant_name }}</h4>
-    {% if profile.image %}
-      <img src="{{ profile.image.url }}" alt="{{ profile.restaurant_name }}" class="img-fluid rounded mb-3" style="max-height:180px">
-    {% endif %}
-    <p class="text-muted">Status: <strong>{{ profile.get_status_display }}</strong></p>
 
-    {% for m in messages %}<div class="alert alert-{% if m.tags == 'error' %}danger{% else %}{{ m.tags }}{% endif %} py-2">{{ m }}</div>{% endfor %}
+<link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+>
 
-    {% if profile.status == "pending" %}
-      <div class="alert alert-info">Your documents are under review. You can log in once approved.</div>
-      <a href="{% url 'base:logout' %}" class="btn btn-outline-secondary">Logout</a>
-    {% else %}
-      {% if profile.status == "rejected" %}
-        <div class="alert alert-danger"><strong>Rejected:</strong> {{ profile.rejection_reason }}<br>Please correct and resubmit.</div>
-      {% endif %}
-      <form method="post" enctype="multipart/form-data" novalidate>
-        {% csrf_token %}
-        {% for f in form %}
-          <div class="mb-3">
-            <label class="form-label fw-semibold" for="{{ f.id_for_label }}">{{ f.label }}{% if f.field.required %} <span class="text-danger">*</span>{% else %} (optional){% endif %}</label>
-            {{ f }}
-            {% if f.name == "image" %}
-              <img id="imagePreview" class="img-fluid rounded mt-2 d-none" style="max-height:180px" alt="Preview">
+<style>
+    body {
+        background: #f5f7fa;
+    }
+
+    .document-card {
+        border: 0;
+        border-radius: 18px;
+        overflow: hidden;
+    }
+
+    .restaurant-image {
+        width: 100%;
+        max-height: 180px;
+        object-fit: cover;
+        border-radius: 12px;
+    }
+
+    .location-box {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        padding: 15px;
+    }
+
+    .location-btn {
+        background: #fd683e;
+        border: none;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 11px 18px;
+    }
+
+    .location-btn:hover {
+        background: #e9552d;
+        color: #fff;
+    }
+
+    .location-status {
+        margin-top: 10px;
+        font-size: 14px;
+    }
+
+    .coordinates {
+        display: none;
+        font-size: 13px;
+        color: #198754;
+        margin-top: 8px;
+    }
+
+    .submit-btn {
+        background: #fd683e;
+        border: none;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 12px;
+    }
+
+    .submit-btn:hover {
+        background: #e9552d;
+        color: #fff;
+    }
+
+    @media (max-width: 576px) {
+
+        .container {
+            padding-left: 12px !important;
+            padding-right: 12px !important;
+        }
+
+        .card-body {
+            padding: 20px !important;
+        }
+
+        h4 {
+            font-size: 21px;
+        }
+
+        .location-btn {
+            width: 100%;
+        }
+    }
+</style>
+
+</head>
+
+<body>
+
+<div class="container py-4 py-md-5" style="max-width:640px">
+
+    <div class="card shadow-sm document-card">
+
+        <div class="card-body p-4">
+
+            <h4 class="mb-1">
+                {{ profile.restaurant_name }}
+            </h4>
+
+            <p class="text-muted mb-3">
+                Complete your restaurant verification
+            </p>
+
+
+            {% if profile.image %}
+
+                <img
+                    src="{{ profile.image.url }}"
+                    alt="{{ profile.restaurant_name }}"
+                    class="restaurant-image mb-3"
+                >
+
             {% endif %}
-            {% for e in f.errors %}<small class="text-danger d-block">{{ e }}</small>{% endfor %}
-          </div>
-        {% endfor %}
-        <button class="btn btn-warning w-100">Submit for verification</button>
-      </form>
-    {% endif %}
-  </div></div>
+
+
+            <p class="text-muted">
+                Status:
+                <strong>{{ profile.get_status_display }}</strong>
+            </p>
+
+
+            <!-- Messages -->
+
+            {% for m in messages %}
+
+                <div class="alert
+                    {% if m.tags == 'error' %}
+                        alert-danger
+                    {% else %}
+                        alert-{{ m.tags }}
+                    {% endif %}
+                    py-2">
+
+                    {{ m }}
+
+                </div>
+
+            {% endfor %}
+
+
+            {% if profile.status == "pending" %}
+
+                <div class="alert alert-info">
+
+                    <strong>Documents submitted.</strong>
+
+                    <br>
+
+                    Your documents are currently under review.
+                    You can log in once your restaurant is approved.
+
+                </div>
+
+                <a
+                    href="{% url 'base:logout' %}"
+                    class="btn btn-outline-secondary"
+                >
+                    Logout
+                </a>
+
+
+            {% else %}
+
+
+                {% if profile.status == "rejected" %}
+
+                    <div class="alert alert-danger">
+
+                        <strong>Rejected:</strong>
+
+                        {{ profile.rejection_reason }}
+
+                        <br>
+
+                        Please correct the information and resubmit.
+
+                    </div>
+
+                {% endif %}
+
+
+                <form
+                    method="post"
+                    enctype="multipart/form-data"
+                    novalidate
+                    id="restaurantDocumentForm"
+                >
+
+                    {% csrf_token %}
+
+
+                    <!-- Form Fields -->
+
+                    {% for f in form %}
+
+                        {% if f.name != "latitude" and f.name != "longitude" %}
+
+                            <div class="mb-3">
+
+                                <label
+                                    class="form-label fw-semibold"
+                                    for="{{ f.id_for_label }}"
+                                >
+
+                                    {{ f.label }}
+
+                                    {% if f.field.required %}
+
+                                        <span class="text-danger">*</span>
+
+                                    {% else %}
+
+                                        <span class="text-muted">
+                                            (optional)
+                                        </span>
+
+                                    {% endif %}
+
+                                </label>
+
+
+                                {{ f }}
+
+
+                                {% if f.name == "image" %}
+
+                                    <img
+                                        id="imagePreview"
+                                        class="img-fluid rounded mt-2 d-none"
+                                        style="max-height:180px"
+                                        alt="Preview"
+                                    >
+
+                                {% endif %}
+
+
+                                {% for e in f.errors %}
+
+                                    <small class="text-danger d-block">
+                                        {{ e }}
+                                    </small>
+
+                                {% endfor %}
+
+                            </div>
+
+                        {% endif %}
+
+                    {% endfor %}
+
+
+                    <!-- Restaurant Location -->
+
+                    <div class="location-box mb-4">
+
+                        <div class="d-flex align-items-start gap-2">
+
+                            <div style="font-size:24px;">
+                                📍
+                            </div>
+
+                            <div>
+
+                                <h6 class="mb-1">
+                                    Restaurant Location
+                                </h6>
+
+                                <p class="text-muted small mb-3">
+
+                                    Please allow location access and capture
+                                    your restaurant's current GPS location.
+
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            id="getLocationBtn"
+                            class="btn location-btn"
+                        >
+
+                            📍 Get Current Location
+
+                        </button>
+
+
+                        <div
+                            id="locationStatus"
+                            class="location-status text-muted"
+                        >
+
+                            Location not captured yet.
+
+                        </div>
+
+
+                        <div
+                            id="coordinates"
+                            class="coordinates"
+                        >
+
+                            Latitude:
+                            <strong id="latitudeText"></strong>
+
+                            <br>
+
+                            Longitude:
+                            <strong id="longitudeText"></strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Hidden GPS fields -->
+
+                    {{ form.latitude }}
+
+                    {{ form.longitude }}
+
+
+                    <button
+                        type="submit"
+                        class="btn submit-btn w-100"
+                        id="submitBtn"
+                    >
+
+                        Submit for verification
+
+                    </button>
+
+                </form>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
 </div>
 
+
 <script>
+
 (function () {
-  const input = document.getElementById("id_image");
-  const preview = document.getElementById("imagePreview");
-  if (!input || !preview) return;
-  input.addEventListener("change", function () {
-    const file = input.files[0];
-    if (file && file.type.startsWith("image/")) {
-      preview.src = URL.createObjectURL(file);
-      preview.classList.remove("d-none");
-    } else {
-      preview.classList.add("d-none");
+
+    /* ==============================
+       Image Preview
+    ============================== */
+
+    const input = document.getElementById("id_image");
+    const preview = document.getElementById("imagePreview");
+
+    if (input && preview) {
+
+        input.addEventListener("change", function () {
+
+            const file = input.files[0];
+
+            if (file && file.type.startsWith("image/")) {
+
+                preview.src = URL.createObjectURL(file);
+
+                preview.classList.remove("d-none");
+
+            } else {
+
+                preview.classList.add("d-none");
+
+            }
+
+        });
+
     }
-  });
+
+
+    /* ==============================
+       GPS Location
+    ============================== */
+
+    const locationBtn =
+        document.getElementById("getLocationBtn");
+
+    const locationStatus =
+        document.getElementById("locationStatus");
+
+    const coordinates =
+        document.getElementById("coordinates");
+
+    const latitudeText =
+        document.getElementById("latitudeText");
+
+    const longitudeText =
+        document.getElementById("longitudeText");
+
+    const latitudeInput =
+        document.getElementById("id_latitude");
+
+    const longitudeInput =
+        document.getElementById("id_longitude");
+
+
+    if (!locationBtn) {
+        return;
+    }
+
+
+    locationBtn.addEventListener("click", function () {
+
+        if (!navigator.geolocation) {
+
+            locationStatus.innerHTML =
+                '<span class="text-danger">' +
+                'GPS location is not supported by your browser.' +
+                '</span>';
+
+            return;
+        }
+
+
+        locationBtn.disabled = true;
+
+        locationBtn.innerHTML =
+            "⏳ Getting Location...";
+
+        locationStatus.innerHTML =
+            '<span class="text-primary">' +
+            'Please allow location access in your browser.' +
+            '</span>';
+
+
+        navigator.geolocation.getCurrentPosition(
+
+            function (position) {
+
+                const latitude =
+                    position.coords.latitude;
+
+                const longitude =
+                    position.coords.longitude;
+
+
+                /* Put GPS values into Django fields */
+
+                if (latitudeInput) {
+                    latitudeInput.value = latitude;
+                }
+
+                if (longitudeInput) {
+                    longitudeInput.value = longitude;
+                }
+
+
+                /* Display coordinates */
+
+                latitudeText.textContent =
+                    latitude.toFixed(7);
+
+                longitudeText.textContent =
+                    longitude.toFixed(7);
+
+                coordinates.style.display = "block";
+
+
+                locationStatus.innerHTML =
+                    '<span class="text-success fw-semibold">' +
+                    '✓ Restaurant location captured successfully.' +
+                    '</span>';
+
+
+                locationBtn.innerHTML =
+                    "✓ Location Captured";
+
+                locationBtn.classList.remove(
+                    "location-btn"
+                );
+
+                locationBtn.classList.add(
+                    "btn-success"
+                );
+
+                locationBtn.disabled = false;
+
+            },
+
+            function (error) {
+
+                let message =
+                    "Unable to get your location.";
+
+                if (error.code === 1) {
+
+                    message =
+                        "Location permission was denied. Please allow location access.";
+
+                } else if (error.code === 2) {
+
+                    message =
+                        "Your location could not be determined. Please try again.";
+
+                } else if (error.code === 3) {
+
+                    message =
+                        "Location request timed out. Please try again.";
+
+                }
+
+
+                locationStatus.innerHTML =
+                    '<span class="text-danger">' +
+                    message +
+                    '</span>';
+
+
+                locationBtn.innerHTML =
+                    "📍 Try Again";
+
+                locationBtn.disabled = false;
+
+            },
+
+            {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0
+            }
+
+        );
+
+    });
+
+
+    /* ==============================
+       Prevent Submit Without GPS
+    ============================== */
+
+    const form =
+        document.getElementById(
+            "restaurantDocumentForm"
+        );
+
+    if (form) {
+
+        form.addEventListener("submit", function (event) {
+
+            if (
+                !latitudeInput.value ||
+                !longitudeInput.value
+            ) {
+
+                event.preventDefault();
+
+                locationStatus.innerHTML =
+                    '<span class="text-danger fw-semibold">' +
+                    'Please capture your restaurant location before submitting.' +
+                    '</span>';
+
+                locationBtn.focus();
+
+                return false;
+            }
+
+        });
+
+    }
+
 })();
+
 </script>
-</body></html>
+
+</body>
+</html>

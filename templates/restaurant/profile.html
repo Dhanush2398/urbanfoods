@@ -1,0 +1,498 @@
+
+{% extends "restaurant/base.html" %}
+{% load static %}
+
+{% block title %}Restaurant Profile{% endblock %}
+
+{% block content %}
+<div class="content-body">
+    <div class="container-fluid">
+
+        <div class="page-title">
+            <div>
+                <h3>Restaurant Profile</h3>
+                <p>View your registration details and uploaded documents.</p>
+            </div>
+        </div>
+
+        <!-- PROFILE HEADER -->
+        <div class="card profile-header-card">
+            <div class="card-body">
+                <div class="profile-header-content">
+
+                    <div class="restaurant-avatar">
+                        {% if profile.image %}
+                            <img src="{{ profile.image.url }}"
+                                 alt="Restaurant image">
+                        {% else %}
+                            <i class="fas fa-store"></i>
+                        {% endif %}
+                    </div>
+
+                    <div class="profile-heading">
+                        <h3>{{ profile.restaurant_name }}</h3>
+                        <p>
+                            <i class="fas fa-map-marker-alt"></i>
+                            {{ profile.city }}
+                        </p>
+
+                        <span class="status-badge status-{{ profile.status|lower }}">
+                            {{ profile.get_status_display }}
+                        </span>
+                    </div>
+
+                </div>
+
+                {% if profile.status == "REJECTED" and profile.rejection_reason %}
+                    <div class="alert alert-danger mt-4 mb-0">
+                        <strong>Rejection reason:</strong>
+                        {{ profile.rejection_reason }}
+                    </div>
+                {% endif %}
+
+                {% if profile.status == "PENDING" %}
+                    <div class="alert alert-warning mt-4 mb-0">
+                        Your documents are awaiting admin verification.
+                    </div>
+                {% endif %}
+
+                {% if profile.status == "APPROVED" %}
+                    <div class="alert alert-success mt-4 mb-0">
+                        Your restaurant has been approved.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- REGISTRATION DETAILS -->
+        <div class="card profile-card">
+            <div class="card-header">
+                <h4><i class="fas fa-user-circle"></i> Registration Details</h4>
+            </div>
+
+            <div class="card-body">
+                <div class="details-grid">
+
+                    <div class="detail-item">
+                        <span>Owner Name</span>
+                        <strong>
+                            {{ owner.get_full_name|default:owner.username }}
+                        </strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Phone Number</span>
+                        <strong>{{ owner.username }}</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Email Address</span>
+                        <strong>{{ owner.email|default:"Not provided" }}</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Restaurant Name</span>
+                        <strong>{{ profile.restaurant_name }}</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>City</span>
+                        <strong>{{ profile.city }}</strong>
+                    </div>
+
+                    <div class="detail-item full-width">
+                        <span>Restaurant Address</span>
+                        <strong>{{ profile.address }}</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Registered On</span>
+                        <strong>{{ profile.created_at|date:"d M Y" }}</strong>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- UPLOADED DOCUMENTS -->
+        <div class="card profile-card">
+            <div class="card-header">
+                <h4><i class="fas fa-file-alt"></i> Uploaded Documents</h4>
+            </div>
+
+            <div class="card-body">
+                <div class="details-grid">
+
+                    <div class="detail-item">
+                        <span>Restaurant Image</span>
+                        {% if profile.image %}
+                            <a href="{{ profile.image.url }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="document-link">
+                                <i class="fas fa-eye"></i> View Image
+                            </a>
+                        {% else %}
+                            <strong>Not uploaded</strong>
+                        {% endif %}
+                    </div>
+
+                    <div class="detail-item">
+                        <span>FSSAI Number</span>
+                        <strong>{{ profile.fssai_number|default:"Not provided" }}</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>FSSAI Certificate</span>
+                        {% if profile.fssai_certificate %}
+                            <a href="{{ profile.fssai_certificate.url }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="document-link">
+                                <i class="fas fa-file-download"></i> View Certificate
+                            </a>
+                        {% else %}
+                            <strong>Not uploaded</strong>
+                        {% endif %}
+                    </div>
+
+                    <div class="detail-item">
+                        <span>PAN Number</span>
+                        <strong>{{ profile.pan_number|default:"Not provided" }}</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>PAN Card</span>
+                        {% if profile.pan_card %}
+                            <a href="{{ profile.pan_card.url }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="document-link">
+                                <i class="fas fa-file-download"></i> View PAN Card
+                            </a>
+                        {% else %}
+                            <strong>Not uploaded</strong>
+                        {% endif %}
+                    </div>
+
+                    <div class="detail-item">
+                        <span>GST Number</span>
+                        <strong>{{ profile.gst_number|default:"Not provided" }}</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>GST Certificate</span>
+                        {% if profile.gst_certificate %}
+                            <a href="{{ profile.gst_certificate.url }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="document-link">
+                                <i class="fas fa-file-download"></i> View GST Certificate
+                            </a>
+                        {% else %}
+                            <strong>Not uploaded</strong>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- CAPTURED GPS LOCATION -->
+        <div class="card profile-card">
+            <div class="card-header">
+                <h4><i class="fas fa-map-marker-alt"></i> Restaurant GPS Location</h4>
+            </div>
+
+            <div class="card-body">
+                {% if profile.latitude != None and profile.longitude != None %}
+                    <div class="details-grid mb-4">
+                        <div class="detail-item">
+                            <span>Latitude</span>
+                            <strong>{{ profile.latitude }}</strong>
+                        </div>
+
+                        <div class="detail-item">
+                            <span>Longitude</span>
+                            <strong>{{ profile.longitude }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="profile-map">
+                        <iframe
+                            src="https://www.google.com/maps?q={{ profile.latitude }},{{ profile.longitude }}&z=17&output=embed"
+                            title="Restaurant GPS Location"
+                            loading="lazy"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+
+                    <a class="btn btn-primary mt-3"
+                       href="https://www.google.com/maps?q={{ profile.latitude }},{{ profile.longitude }}"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        <i class="fas fa-map-marked-alt"></i>
+                        Open in Google Maps
+                    </a>
+                {% else %}
+                    <p class="text-muted mb-0">
+                        Restaurant GPS location has not been captured yet.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- VERIFICATION DETAILS -->
+        <div class="card profile-card">
+            <div class="card-header">
+                <h4><i class="fas fa-shield-alt"></i> Verification Details</h4>
+            </div>
+
+            <div class="card-body">
+                <div class="details-grid">
+
+                    <div class="detail-item">
+                        <span>Application Status</span>
+                        <strong>{{ profile.get_status_display }}</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Submitted On</span>
+                        <strong>
+                            {% if profile.submitted_at %}
+                                {{ profile.submitted_at|date:"d M Y, h:i A" }}
+                            {% else %}
+                                Not submitted
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Reviewed On</span>
+                        <strong>
+                            {% if profile.reviewed_at %}
+                                {{ profile.reviewed_at|date:"d M Y, h:i A" }}
+                            {% else %}
+                                Not reviewed
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Reviewed By</span>
+                        <strong>
+                            {% if profile.reviewed_by %}
+                                {{ profile.reviewed_by.get_full_name|default:profile.reviewed_by.username }}
+                            {% else %}
+                                Not reviewed
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        {% if profile.status == "INCOMPLETE" or profile.status == "REJECTED" %}
+            <div class="text-center mb-4">
+                <a href="{% url 'base:restaurant_documents' %}"
+                   class="btn btn-primary">
+                    <i class="fas fa-upload"></i>
+                    Upload / Update Documents
+                </a>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<style>
+.profile-header-card,
+.profile-card {
+    border: 0;
+    border-radius: 16px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.05);
+    margin-bottom: 24px;
+}
+
+.profile-header-content {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.restaurant-avatar {
+    width: 105px;
+    height: 105px;
+    flex-shrink: 0;
+    border-radius: 16px;
+    background: #fff0e9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fd683e;
+    font-size: 38px;
+    overflow: hidden;
+}
+
+.restaurant-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-heading h3 {
+    font-size: 23px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    overflow-wrap: anywhere;
+}
+
+.profile-heading p {
+    color: #777;
+    margin-bottom: 12px;
+}
+
+.status-badge {
+    display: inline-block;
+    border-radius: 30px;
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #eee;
+    color: #444;
+}
+
+.status-pending {
+    background: #fff0cc;
+    color: #956400;
+}
+
+.status-approved {
+    background: #d9f8e6;
+    color: #087443;
+}
+
+.status-rejected {
+    background: #ffe1e1;
+    color: #b42318;
+}
+
+.status-incomplete {
+    background: #e9e9ee;
+    color: #555;
+}
+
+.profile-card .card-header {
+    padding: 20px 24px;
+    background: transparent;
+}
+
+.profile-card .card-header h4 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.profile-card .card-header h4 i {
+    color: #fd683e;
+    margin-right: 8px;
+}
+
+.profile-card .card-body {
+    padding: 24px;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.detail-item {
+    background: #f8f9fb;
+    padding: 17px;
+    border-radius: 12px;
+    min-width: 0;
+}
+
+.detail-item span {
+    display: block;
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 8px;
+}
+
+.detail-item strong {
+    display: block;
+    color: #252525;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+.document-link {
+    display: inline-block;
+    color: #fd683e;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.document-link:hover {
+    color: #d94b25;
+    text-decoration: underline;
+}
+
+.profile-map {
+    width: 100%;
+    height: 360px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #eee;
+}
+
+.profile-map iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+@media (max-width: 767px) {
+    .profile-header-content {
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .restaurant-avatar {
+        width: 75px;
+        height: 75px;
+        font-size: 28px;
+    }
+
+    .profile-heading h3 {
+        font-size: 18px;
+    }
+
+    .details-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .full-width {
+        grid-column: auto;
+    }
+
+    .profile-card .card-header,
+    .profile-card .card-body {
+        padding: 17px;
+    }
+
+    .profile-map {
+        height: 280px;
+    }
+}
+</style>
+{% endblock %}

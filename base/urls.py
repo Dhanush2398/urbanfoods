@@ -35,5 +35,8 @@ urlpatterns = [
     path("dashboard/delivery-partners/<int:pk>/review/",views.delivery_review,name="delivery_review",),
     path("dashboard/delivery-partner-list/",views.delivery_list,name="delivery_list",),
     path("dashboard/delivery-partner-list/<int:pk>/",views.delivery_detail,name="delivery_detail",),
+    path("restaurant/profile/",views.restaurant_profile,name="restaurant_profile",),
+    path("delivery/profile/",views.delivery_profile,name="delivery_profile",),
+
 
 ]

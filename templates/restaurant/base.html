@@ -156,12 +156,14 @@
                             <span class="nav-text">Orders</span>
                         </a>
                     </li>
-                    <li>
-                        <a class="ai-icon" href="#" aria-expanded="false">
-                            <i class="flaticon-381-user-9"></i>
-                            <span class="nav-text">Profile</span>
-                        </a>
-                    </li>
+                 <li>
+    <a class="ai-icon"
+       href="{% url 'base:restaurant_profile' %}"
+       aria-expanded="false">
+        <i class="flaticon-381-user-9"></i>
+        <span class="nav-text">Profile</span>
+    </a>
+</li>
                     <li>
                         <a class="ai-icon" href="{% url 'base:restaurant_logout' %}" aria-expanded="false">
                             <i class="flaticon-381-exit"></i>

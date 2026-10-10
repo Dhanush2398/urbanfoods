@@ -1,0 +1,404 @@
+
+{% extends "delivery/base.html" %}
+{% load static %}
+
+{% block title %}Delivery Partner Profile{% endblock %}
+
+{% block content %}
+<div class="content-body">
+    <div class="container-fluid">
+
+        <div class="page-title mb-4">
+            <h3>My Profile</h3>
+            <p class="text-muted">
+                View your registration details and uploaded documents.
+            </p>
+        </div>
+
+        <!-- PROFILE HEADER -->
+        <div class="card profile-card">
+            <div class="card-body">
+                <div class="profile-header">
+
+                    <div class="profile-photo">
+                        {% if profile.photo %}
+                            <img src="{{ profile.photo.url }}"
+                                 alt="Delivery partner photo">
+                        {% else %}
+                            <i class="fas fa-user"></i>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <h3>
+                            {{ owner.get_full_name|default:owner.username }}
+                        </h3>
+                        <p class="text-muted mb-2">
+                            Delivery Partner
+                        </p>
+
+                        <span class="status-badge status-{{ profile.status|lower }}">
+                            {{ profile.get_status_display }}
+                        </span>
+                    </div>
+
+                </div>
+
+                {% if profile.status == "PENDING" %}
+                    <div class="alert alert-warning mt-4 mb-0">
+                        Your documents have been submitted and are awaiting admin verification.
+                    </div>
+                {% elif profile.status == "APPROVED" %}
+                    <div class="alert alert-success mt-4 mb-0">
+                        Your delivery partner account has been approved.
+                    </div>
+                {% elif profile.status == "REJECTED" %}
+                    <div class="alert alert-danger mt-4 mb-0">
+                        <strong>Application rejected.</strong>
+                        {% if profile.rejection_reason %}
+                            <p class="mb-0 mt-2">
+                                {{ profile.rejection_reason }}
+                            </p>
+                        {% endif %}
+                    </div>
+                {% elif profile.status == "INCOMPLETE" %}
+                    <div class="alert alert-info mt-4 mb-0">
+                        Please complete your profile and submit the required documents.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- REGISTRATION DETAILS -->
+        <div class="card profile-card">
+            <div class="card-header">
+                <h4><i class="fas fa-user-circle"></i> Registration Details</h4>
+            </div>
+
+            <div class="card-body">
+                <div class="details-grid">
+
+                    <div class="detail-item">
+                        <span>Full Name</span>
+                        <strong>
+                            {{ owner.get_full_name|default:owner.username }}
+                        </strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Mobile Number</span>
+                        <strong>{{ owner.username }}</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Email Address</span>
+                        <strong>{{ owner.email|default:"Not provided" }}</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>City</span>
+                        <strong>{{ profile.city }}</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Vehicle Type</span>
+                        <strong>{{ profile.get_vehicle_type_display }}</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Registered On</span>
+                        <strong>{{ profile.created_at|date:"d M Y" }}</strong>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- UPLOADED DOCUMENTS -->
+        <div class="card profile-card">
+            <div class="card-header">
+                <h4><i class="fas fa-file-alt"></i> Uploaded Documents</h4>
+            </div>
+
+            <div class="card-body">
+                <div class="details-grid">
+
+                    <div class="detail-item">
+                        <span>Profile Photo</span>
+                        {% if profile.photo %}
+                            <a href="{{ profile.photo.url }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="document-link">
+                                <i class="fas fa-eye"></i> View Photo
+                            </a>
+                        {% else %}
+                            <strong>Not uploaded</strong>
+                        {% endif %}
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Driving Licence Number</span>
+                        <strong>
+                            {{ profile.driving_license_number|default:"Not provided" }}
+                        </strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Driving Licence</span>
+                        {% if profile.driving_license %}
+                            <a href="{{ profile.driving_license.url }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="document-link">
+                                <i class="fas fa-file-download"></i> View Licence
+                            </a>
+                        {% else %}
+                            <strong>Not uploaded</strong>
+                        {% endif %}
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Vehicle Number</span>
+                        <strong>
+                            {{ profile.vehicle_number|default:"Not provided" }}
+                        </strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>RC Book</span>
+                        {% if profile.rc_book %}
+                            <a href="{{ profile.rc_book.url }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="document-link">
+                                <i class="fas fa-file-download"></i> View RC Book
+                            </a>
+                        {% else %}
+                            <strong>Not uploaded</strong>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- VERIFICATION DETAILS -->
+        <div class="card profile-card">
+            <div class="card-header">
+                <h4><i class="fas fa-shield-alt"></i> Verification Details</h4>
+            </div>
+
+            <div class="card-body">
+                <div class="details-grid">
+
+                    <div class="detail-item">
+                        <span>Application Status</span>
+                        <strong>{{ profile.get_status_display }}</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Submitted On</span>
+                        <strong>
+                            {% if profile.submitted_at %}
+                                {{ profile.submitted_at|date:"d M Y, h:i A" }}
+                            {% else %}
+                                Not submitted
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Reviewed On</span>
+                        <strong>
+                            {% if profile.reviewed_at %}
+                                {{ profile.reviewed_at|date:"d M Y, h:i A" }}
+                            {% else %}
+                                Not reviewed
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Reviewed By</span>
+                        <strong>
+                            {% if profile.reviewed_by %}
+                                {{ profile.reviewed_by.get_full_name|default:profile.reviewed_by.username }}
+                            {% else %}
+                                Not reviewed
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        {% if profile.status == "INCOMPLETE" or profile.status == "REJECTED" %}
+            <div class="text-center mb-4">
+                <a href="{% url 'base:delivery_documents' %}"
+                   class="btn btn-primary">
+                    <i class="fas fa-upload"></i>
+                    Upload / Update Documents
+                </a>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<style>
+.profile-card {
+    border: 0;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.05);
+}
+
+.profile-card .card-header {
+    padding: 20px 24px;
+    background: transparent;
+}
+
+.profile-card .card-header h4 {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.profile-card .card-header h4 i {
+    color: #fd683e;
+    margin-right: 8px;
+}
+
+.profile-card .card-body {
+    padding: 24px;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.profile-header h3 {
+    font-size: 22px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.profile-photo {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: #fff0e9;
+    color: #fd683e;
+    font-size: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.profile-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.detail-item {
+    padding: 17px;
+    border-radius: 12px;
+    background: #f8f9fb;
+    min-width: 0;
+}
+
+.detail-item span {
+    display: block;
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 8px;
+}
+
+.detail-item strong {
+    display: block;
+    font-size: 14px;
+    color: #252525;
+    overflow-wrap: anywhere;
+}
+
+.document-link {
+    color: #fd683e;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.document-link:hover {
+    text-decoration: underline;
+}
+
+.status-badge {
+    display: inline-block;
+    border-radius: 30px;
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #eee;
+    color: #444;
+}
+
+.status-pending {
+    background: #fff0cc;
+    color: #956400;
+}
+
+.status-approved {
+    background: #d9f8e6;
+    color: #087443;
+}
+
+.status-rejected {
+    background: #ffe1e1;
+    color: #b42318;
+}
+
+.status-incomplete {
+    background: #e9e9ee;
+    color: #555;
+}
+
+@media (max-width: 767px) {
+    .profile-header {
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .profile-photo {
+        width: 75px;
+        height: 75px;
+        font-size: 28px;
+    }
+
+    .profile-header h3 {
+        font-size: 18px;
+    }
+
+    .details-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .profile-card .card-header,
+    .profile-card .card-body {
+        padding: 17px;
+    }
+}
+</style>
+{% endblock %}

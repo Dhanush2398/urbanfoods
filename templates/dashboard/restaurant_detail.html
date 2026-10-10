@@ -1,112 +1,1128 @@
 {% extends "dashboard/base.html" %}
+
 {% block content %}
+
 <div class="content-body">
-  <div class="container-fluid">
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h4 class="fs-20 mb-0">Restaurant Details</h4>
-      <a href="{% url 'base:restaurant_list' %}" class="btn btn-outline-primary btn-sm">Back to List</a>
-    </div>
+    <div class="container-fluid">
 
-    <!-- Header -->
-    <div class="card">
-      <div class="card-body d-flex flex-wrap align-items-center gap-3">
-        {% if p.image %}
-          <a href="{{ p.image.url }}" target="_blank">
-            <img src="{{ p.image.url }}" alt="{{ p.restaurant_name }}" width="120" height="120" class="rounded" style="object-fit:cover">
-          </a>
-        {% else %}
-          <div class="rounded bg-light d-flex align-items-center justify-content-center text-muted" style="width:120px;height:120px"><i class="fas fa-store fa-2x"></i></div>
-        {% endif %}
-        <div class="me-auto">
-          <h3 class="mb-1">{{ p.restaurant_name }}</h3>
-          <span class="text-muted">{{ p.address }}, {{ p.city }}</span>
+        <!-- ==========================================
+             PAGE HEADER
+        =========================================== -->
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+
+            <h4 class="fs-20 mb-0">
+                Restaurant Details
+            </h4>
+
+            <a
+                href="{% url 'base:restaurant_list' %}"
+                class="btn btn-outline-primary btn-sm"
+            >
+                <i class="fas fa-arrow-left me-1"></i>
+                Back to List
+            </a>
+
         </div>
-        <span class="badge fs-6
-          {% if p.status == 'approved' %}bg-success
-          {% elif p.status == 'pending' %}bg-warning text-dark
-          {% elif p.status == 'rejected' %}bg-danger
-          {% else %}bg-secondary{% endif %}">{{ p.get_status_display }}</span>
-      </div>
-    </div>
 
-    <div class="row">
-      <!-- Owner -->
-      <div class="col-xl-6">
+
+        <!-- ==========================================
+             RESTAURANT HEADER
+        =========================================== -->
+
         <div class="card">
-          <div class="card-header border-0"><h5 class="mb-0">Owner</h5></div>
-          <div class="card-body pt-0">
-            <table class="table table-borderless mb-0">
-              <tr><th style="width:40%">Name</th><td>{{ p.user.get_full_name|default:"-" }}</td></tr>
-              <tr><th>Phone</th><td>{{ p.user.username }}</td></tr>
-              <tr><th>Email</th><td>{{ p.user.email|default:"-" }}</td></tr>
-              <tr><th>Account created</th><td>{{ p.user.date_joined|date:"d M Y, H:i" }}</td></tr>
-              <tr><th>Last login</th><td>{{ p.user.last_login|date:"d M Y, H:i"|default:"Never" }}</td></tr>
-            </table>
-          </div>
-        </div>
-      </div>
 
-      <!-- Restaurant -->
-      <div class="col-xl-6">
+            <div class="card-body d-flex flex-wrap align-items-center gap-3">
+
+                {% if p.image %}
+
+                    <a
+                        href="{{ p.image.url }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+
+                        <img
+                            src="{{ p.image.url }}"
+                            alt="{{ p.restaurant_name }}"
+                            class="restaurant-header-image rounded"
+                        >
+
+                    </a>
+
+                {% else %}
+
+                    <div class="restaurant-placeholder">
+
+                        <i class="fas fa-store fa-2x"></i>
+
+                    </div>
+
+                {% endif %}
+
+
+                <div class="me-auto restaurant-header-info">
+
+                    <h3 class="mb-1">
+                        {{ p.restaurant_name }}
+                    </h3>
+
+                    <span class="text-muted">
+                        {{ p.address }}, {{ p.city }}
+                    </span>
+
+                </div>
+
+
+                <!-- STATUS -->
+
+                <span
+                    class="badge fs-6
+                    {% if p.status == 'approved' %}
+                        bg-success
+                    {% elif p.status == 'pending' %}
+                        bg-warning text-dark
+                    {% elif p.status == 'rejected' %}
+                        bg-danger
+                    {% else %}
+                        bg-secondary
+                    {% endif %}"
+                >
+
+                    {{ p.get_status_display }}
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==========================================
+             OWNER + RESTAURANT
+        =========================================== -->
+
+        <div class="row">
+
+
+            <!-- ==========================================
+                 OWNER
+            =========================================== -->
+
+            <div class="col-xl-6">
+
+                <div class="card">
+
+                    <div class="card-header border-0">
+
+                        <h5 class="mb-0">
+
+                            <i class="fas fa-user me-2 text-primary"></i>
+
+                            Owner
+
+                        </h5>
+
+                    </div>
+
+
+                    <div class="card-body pt-0">
+
+                        <div class="table-responsive">
+
+                            <table class="table table-borderless mb-0">
+
+                                <tr>
+
+                                    <th style="width:40%;">
+                                        Name
+                                    </th>
+
+                                    <td>
+                                        {{ p.user.get_full_name|default:"-" }}
+                                    </td>
+
+                                </tr>
+
+
+                                <tr>
+
+                                    <th>
+                                        Phone
+                                    </th>
+
+                                    <td>
+                                        {{ p.user.username }}
+                                    </td>
+
+                                </tr>
+
+
+                                <tr>
+
+                                    <th>
+                                        Email
+                                    </th>
+
+                                    <td>
+                                        {{ p.user.email|default:"-" }}
+                                    </td>
+
+                                </tr>
+
+
+                                <tr>
+
+                                    <th>
+                                        Account created
+                                    </th>
+
+                                    <td>
+                                        {{ p.user.date_joined|date:"d M Y, H:i" }}
+                                    </td>
+
+                                </tr>
+
+
+                                <tr>
+
+                                    <th>
+                                        Last login
+                                    </th>
+
+                                    <td>
+                                        {{ p.user.last_login|date:"d M Y, H:i"|default:"Never" }}
+                                    </td>
+
+                                </tr>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==========================================
+                 RESTAURANT
+            =========================================== -->
+
+            <div class="col-xl-6">
+
+                <div class="card">
+
+                    <div class="card-header border-0">
+
+                        <h5 class="mb-0">
+
+                            <i class="fas fa-store me-2 text-warning"></i>
+
+                            Restaurant
+
+                        </h5>
+
+                    </div>
+
+
+                    <div class="card-body pt-0">
+
+                        <div class="table-responsive">
+
+                            <table class="table table-borderless mb-0">
+
+                                <tr>
+
+                                    <th style="width:40%;">
+                                        Name
+                                    </th>
+
+                                    <td>
+                                        {{ p.restaurant_name }}
+                                    </td>
+
+                                </tr>
+
+
+                                <tr>
+
+                                    <th>
+                                        Address
+                                    </th>
+
+                                    <td>
+                                        {{ p.address }}
+                                    </td>
+
+                                </tr>
+
+
+                                <tr>
+
+                                    <th>
+                                        City
+                                    </th>
+
+                                    <td>
+                                        {{ p.city }}
+                                    </td>
+
+                                </tr>
+
+
+                                <tr>
+
+                                    <th>
+                                        Registered on
+                                    </th>
+
+                                    <td>
+                                        {{ p.created_at|date:"d M Y, H:i" }}
+                                    </td>
+
+                                </tr>
+
+
+                                <tr>
+
+                                    <th>
+                                        Documents submitted
+                                    </th>
+
+                                    <td>
+                                        {{ p.submitted_at|date:"d M Y, H:i"|default:"Not yet" }}
+                                    </td>
+
+                                </tr>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==========================================
+             RESTAURANT CURRENT GPS LOCATION
+        =========================================== -->
+
         <div class="card">
-          <div class="card-header border-0"><h5 class="mb-0">Restaurant</h5></div>
-          <div class="card-body pt-0">
-            <table class="table table-borderless mb-0">
-              <tr><th style="width:40%">Name</th><td>{{ p.restaurant_name }}</td></tr>
-              <tr><th>Address</th><td>{{ p.address }}</td></tr>
-              <tr><th>City</th><td>{{ p.city }}</td></tr>
-              <tr><th>Registered on</th><td>{{ p.created_at|date:"d M Y, H:i" }}</td></tr>
-              <tr><th>Documents submitted</th><td>{{ p.submitted_at|date:"d M Y, H:i"|default:"Not yet" }}</td></tr>
-            </table>
-          </div>
+
+            <div class="card-header border-0">
+
+                <h5 class="mb-0">
+
+                    <i class="fas fa-map-marker-alt text-danger me-2"></i>
+
+                    Restaurant Current Location
+
+                </h5>
+
+            </div>
+
+
+            <div class="card-body pt-0">
+
+
+                {% if p.latitude and p.longitude %}
+
+
+                    <!-- ==========================================
+                         GPS CAPTURED SUCCESSFULLY
+                    =========================================== -->
+
+                    <div class="gps-success-message">
+
+                        <i class="fas fa-check-circle me-2"></i>
+
+                        <strong>
+                            Restaurant current GPS location captured
+                        </strong>
+
+                    </div>
+
+
+                    <!-- ==========================================
+                         LATITUDE / LONGITUDE
+                    =========================================== -->
+
+                    <div class="row mb-3">
+
+
+                        <div class="col-md-6 mb-3 mb-md-0">
+
+                            <div class="gps-coordinate-box">
+
+                                <small class="text-muted d-block">
+                                    Latitude
+                                </small>
+
+                                <strong>
+                                    {{ p.latitude }}
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="gps-coordinate-box">
+
+                                <small class="text-muted d-block">
+                                    Longitude
+                                </small>
+
+                                <strong>
+                                    {{ p.longitude }}
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==========================================
+                         EXACT GPS GOOGLE MAP
+                    =========================================== -->
+
+                    <div class="restaurant-gps-map">
+
+                        <iframe
+                            src="https://www.google.com/maps?q={{ p.latitude }},{{ p.longitude }}&z=17&output=embed"
+                            title="Restaurant Current GPS Location"
+                            allowfullscreen
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+
+                    </div>
+
+
+                    <!-- ==========================================
+                         MAP ACTIONS
+                    =========================================== -->
+
+                    <div class="location-actions mt-3">
+
+                        <a
+                            href="https://www.google.com/maps?q={{ p.latitude }},{{ p.longitude }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="btn btn-primary"
+                        >
+
+                            <i class="fas fa-map-marker-alt me-2"></i>
+
+                            View Restaurant Location
+
+                        </a>
+
+
+                        <a
+                            href="https://www.google.com/maps/dir/?api=1&destination={{ p.latitude }},{{ p.longitude }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="btn btn-outline-primary"
+                        >
+
+                            <i class="fas fa-directions me-2"></i>
+
+                            Get Directions
+
+                        </a>
+
+                    </div>
+
+
+                {% else %}
+
+
+                    <!-- ==========================================
+                         GPS NOT CAPTURED
+                    =========================================== -->
+
+                    <div class="gps-not-found">
+
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+
+                        Restaurant current GPS location has not been
+                        captured yet.
+
+                    </div>
+
+
+                    <div class="mt-3 text-muted">
+
+                        The restaurant must allow browser location access
+                        and click
+                        <strong>Get Current Location</strong>
+                        before submitting the documents.
+
+                    </div>
+
+
+                {% endif %}
+
+            </div>
+
         </div>
-      </div>
+
+
+        <!-- ==========================================
+             DOCUMENTS
+        =========================================== -->
+
+        <div class="card">
+
+            <div class="card-header border-0">
+
+                <h5 class="mb-0">
+
+                    <i class="fas fa-file-alt me-2 text-primary"></i>
+
+                    Documents
+
+                </h5>
+
+            </div>
+
+
+            <div class="card-body pt-0 table-responsive">
+
+                <table class="table align-middle mb-0">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Document
+                            </th>
+
+                            <th>
+                                Number
+                            </th>
+
+                            <th>
+                                File
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                        <!-- RESTAURANT IMAGE -->
+
+                        <tr>
+
+                            <td>
+                                Restaurant image
+                            </td>
+
+                            <td>
+                                -
+                            </td>
+
+                            <td>
+
+                                {% if p.image %}
+
+                                    <a
+                                        href="{{ p.image.url }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        View
+                                    </a>
+
+                                {% else %}
+
+                                    <span class="text-muted">
+                                        Not uploaded
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+
+                        <!-- FSSAI -->
+
+                        <tr>
+
+                            <td>
+                                FSSAI
+                            </td>
+
+                            <td>
+                                {{ p.fssai_number|default:"-" }}
+                            </td>
+
+                            <td>
+
+                                {% if p.fssai_certificate %}
+
+                                    <a
+                                        href="{{ p.fssai_certificate.url }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        View
+                                    </a>
+
+                                {% else %}
+
+                                    <span class="text-muted">
+                                        Not uploaded
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+
+                        <!-- PAN -->
+
+                        <tr>
+
+                            <td>
+                                PAN
+                            </td>
+
+                            <td>
+                                {{ p.pan_number|default:"-" }}
+                            </td>
+
+                            <td>
+
+                                {% if p.pan_card %}
+
+                                    <a
+                                        href="{{ p.pan_card.url }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        View
+                                    </a>
+
+                                {% else %}
+
+                                    <span class="text-muted">
+                                        Not uploaded
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+
+                        <!-- GST -->
+
+                        <tr>
+
+                            <td>
+                                GST
+                            </td>
+
+                            <td>
+                                {{ p.gst_number|default:"-" }}
+                            </td>
+
+                            <td>
+
+                                {% if p.gst_certificate %}
+
+                                    <a
+                                        href="{{ p.gst_certificate.url }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        View
+                                    </a>
+
+                                {% else %}
+
+                                    <span class="text-muted">
+                                        Not uploaded
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==========================================
+             REVIEW
+        =========================================== -->
+
+        <div class="card">
+
+            <div class="card-header border-0">
+
+                <h5 class="mb-0">
+
+                    <i class="fas fa-check-circle me-2 text-success"></i>
+
+                    Review
+
+                </h5>
+
+            </div>
+
+
+            <div class="card-body pt-0">
+
+                <div class="table-responsive">
+
+                    <table class="table table-borderless mb-0">
+
+
+                        <!-- STATUS -->
+
+                        <tr>
+
+                            <th style="width:20%;">
+                                Status
+                            </th>
+
+                            <td>
+
+                                <span
+                                    class="badge
+                                    {% if p.status == 'approved' %}
+                                        bg-success
+                                    {% elif p.status == 'pending' %}
+                                        bg-warning text-dark
+                                    {% elif p.status == 'rejected' %}
+                                        bg-danger
+                                    {% else %}
+                                        bg-secondary
+                                    {% endif %}"
+                                >
+
+                                    {{ p.get_status_display }}
+
+                                </span>
+
+                            </td>
+
+                        </tr>
+
+
+                        <!-- REVIEWED BY -->
+
+                        <tr>
+
+                            <th>
+                                Reviewed by
+                            </th>
+
+                            <td>
+
+                                {% if p.reviewed_by %}
+
+                                    {{ p.reviewed_by.get_full_name|default:p.reviewed_by.username }}
+
+                                {% else %}
+
+                                    -
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+
+                        <!-- REVIEWED ON -->
+
+                        <tr>
+
+                            <th>
+                                Reviewed on
+                            </th>
+
+                            <td>
+
+                                {{ p.reviewed_at|date:"d M Y, H:i"|default:"-" }}
+
+                            </td>
+
+                        </tr>
+
+
+                        <!-- REJECTION REASON -->
+
+                        {% if p.rejection_reason %}
+
+                            <tr>
+
+                                <th>
+                                    Rejection reason
+                                </th>
+
+                                <td class="text-danger">
+
+                                    {{ p.rejection_reason }}
+
+                                </td>
+
+                            </tr>
+
+                        {% endif %}
+
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
     </div>
 
-    <!-- Documents -->
-    <div class="card">
-      <div class="card-header border-0"><h5 class="mb-0">Documents</h5></div>
-      <div class="card-body pt-0 table-responsive">
-        <table class="table align-middle mb-0">
-          <thead><tr><th>Document</th><th>Number</th><th>File</th></tr></thead>
-          <tbody>
-            <tr>
-              <td>Restaurant image</td><td>-</td>
-              <td>{% if p.image %}<a href="{{ p.image.url }}" target="_blank">View</a>{% else %}<span class="text-muted">Not uploaded</span>{% endif %}</td>
-            </tr>
-            <tr>
-              <td>FSSAI</td><td>{{ p.fssai_number|default:"-" }}</td>
-              <td>{% if p.fssai_certificate %}<a href="{{ p.fssai_certificate.url }}" target="_blank">View</a>{% else %}<span class="text-muted">Not uploaded</span>{% endif %}</td>
-            </tr>
-            <tr>
-              <td>PAN</td><td>{{ p.pan_number|default:"-" }}</td>
-              <td>{% if p.pan_card %}<a href="{{ p.pan_card.url }}" target="_blank">View</a>{% else %}<span class="text-muted">Not uploaded</span>{% endif %}</td>
-            </tr>
-            <tr>
-              <td>GST</td><td>{{ p.gst_number|default:"-" }}</td>
-              <td>{% if p.gst_certificate %}<a href="{{ p.gst_certificate.url }}" target="_blank">View</a>{% else %}<span class="text-muted">Not uploaded</span>{% endif %}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Review -->
-    <div class="card">
-      <div class="card-header border-0"><h5 class="mb-0">Review</h5></div>
-      <div class="card-body pt-0">
-        <table class="table table-borderless mb-0">
-          <tr><th style="width:20%">Status</th><td>{{ p.get_status_display }}</td></tr>
-          <tr><th>Reviewed by</th><td>{% if p.reviewed_by %}{{ p.reviewed_by.get_full_name|default:p.reviewed_by.username }}{% else %}-{% endif %}</td></tr>
-          <tr><th>Reviewed on</th><td>{{ p.reviewed_at|date:"d M Y, H:i"|default:"-" }}</td></tr>
-          {% if p.rejection_reason %}
-          <tr><th>Rejection reason</th><td class="text-danger">{{ p.rejection_reason }}</td></tr>
-          {% endif %}
-        </table>
-      </div>
-    </div>
-
-  </div>
 </div>
+
+
+<!-- ==========================================
+     RESPONSIVE CSS
+========================================== -->
+
+<style>
+
+/* ==========================================
+   GENERAL
+========================================== */
+
+.content-body .card {
+    border-radius: 10px;
+}
+
+.content-body .card-header h5 {
+    font-weight: 600;
+}
+
+
+/* ==========================================
+   TABLE
+========================================== */
+
+.content-body table th {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.content-body table td {
+    word-break: break-word;
+}
+
+
+/* ==========================================
+   RESTAURANT HEADER IMAGE
+========================================== */
+
+.restaurant-header-image {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+}
+
+.restaurant-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+}
+
+
+/* ==========================================
+   GPS SUCCESS
+========================================== */
+
+.gps-success-message {
+    background: #d1fae5;
+    color: #087443;
+    border-radius: 12px;
+    padding: 15px 18px;
+    font-size: 14px;
+    margin-bottom: 18px;
+}
+
+
+/* ==========================================
+   GPS COORDINATES
+========================================== */
+
+.gps-coordinate-box {
+    background: #f8f9fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 15px 18px;
+}
+
+.gps-coordinate-box small {
+    font-size: 13px;
+}
+
+.gps-coordinate-box strong {
+    display: block;
+    margin-top: 4px;
+    font-size: 15px;
+    word-break: break-all;
+}
+
+
+/* ==========================================
+   GOOGLE MAP
+========================================== */
+
+.restaurant-gps-map {
+    width: 100%;
+    overflow: hidden;
+    border-radius: 14px;
+    border: 1px solid #e1e1e1;
+    background: #f5f5f5;
+}
+
+.restaurant-gps-map iframe {
+    display: block;
+    width: 100%;
+    height: 450px;
+    border: 0;
+}
+
+
+/* ==========================================
+   MAP BUTTONS
+========================================== */
+
+.location-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.location-actions .btn {
+    border-radius: 8px;
+}
+
+
+/* ==========================================
+   GPS NOT FOUND
+========================================== */
+
+.gps-not-found {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffe69c;
+    border-radius: 12px;
+    padding: 16px 18px;
+    font-size: 14px;
+}
+
+
+/* ==========================================
+   TABLET
+========================================== */
+
+@media (max-width: 991px) {
+
+    .content-body .card-body {
+        padding: 20px;
+    }
+
+    .restaurant-gps-map iframe {
+        height: 380px;
+    }
+
+}
+
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 767px) {
+
+    .content-body .container-fluid {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .content-body .card {
+        margin-bottom: 15px;
+    }
+
+    .content-body .card-body {
+        padding: 16px;
+    }
+
+
+    /* Header */
+
+    .content-body h3 {
+        font-size: 21px;
+    }
+
+    .content-body h4 {
+        font-size: 19px;
+    }
+
+    .content-body h5 {
+        font-size: 17px;
+    }
+
+
+    /* Restaurant header */
+
+    .content-body .card-body.d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+
+    .restaurant-header-info {
+        width: 100%;
+    }
+
+    .content-body .card-body.d-flex > .badge {
+        align-self: flex-start;
+    }
+
+
+    .restaurant-header-image {
+        width: 100px;
+        height: 100px;
+    }
+
+    .restaurant-placeholder {
+        width: 100px;
+        height: 100px;
+    }
+
+
+    /* GPS map */
+
+    .restaurant-gps-map iframe {
+        height: 300px;
+    }
+
+
+    /* Buttons */
+
+    .location-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .location-actions .btn {
+        width: 100%;
+        margin-left: 0 !important;
+    }
+
+
+    /* Tables */
+
+    .content-body table {
+        font-size: 14px;
+    }
+
+    .content-body table th {
+        min-width: 120px;
+    }
+
+}
+
+
+/* ==========================================
+   SMALL MOBILE
+========================================== */
+
+@media (max-width: 480px) {
+
+    .content-body .container-fluid {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    .content-body .card-body {
+        padding: 14px;
+    }
+
+    .content-body h3 {
+        font-size: 19px;
+    }
+
+    .content-body h4 {
+        font-size: 18px;
+    }
+
+    .content-body h5 {
+        font-size: 16px;
+    }
+
+
+    .restaurant-gps-map iframe {
+        height: 250px;
+    }
+
+
+    .gps-coordinate-box {
+        padding: 13px;
+    }
+
+    .gps-coordinate-box strong {
+        font-size: 14px;
+    }
+
+
+    .gps-success-message,
+    .gps-not-found {
+        font-size: 13px;
+        padding: 13px 14px;
+    }
+
+}
+
+</style>
+
 {% endblock %}

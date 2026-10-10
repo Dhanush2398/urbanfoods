@@ -71,7 +71,12 @@ class RestaurantDocumentForm(forms.ModelForm):
     class Meta:
         model = RestaurantProfile
         fields = ["image", "fssai_number", "fssai_certificate", "pan_number", "pan_card",
-                  "gst_number", "gst_certificate"]
+                  "gst_number", "gst_certificate", "latitude", "longitude"]
+
+        widgets = {
+            "latitude": forms.HiddenInput(),
+            "longitude": forms.HiddenInput(),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

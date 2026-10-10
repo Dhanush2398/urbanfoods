@@ -671,3 +671,22 @@ def delivery_detail(request, pk):
             "profile": profile,
         },
     )
+
+@restaurant_required
+def restaurant_profile(request):
+    profile = request.restaurant
+
+    return render(request, "restaurant/profile.html", {
+        "profile": profile,
+        "owner": request.user,
+    })
+
+
+@delivery_required
+def delivery_profile(request):
+    profile = request.partner
+
+    return render(request, "delivery/profile.html", {
+        "profile": profile,
+        "owner": request.user,
+    })
