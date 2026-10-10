@@ -1,4 +1,3 @@
-import datetime
 from django.utils import timezone
 from functools import wraps
 
@@ -8,19 +7,20 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.views import LoginView
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.utils import timezone
 from django.views.decorators.http import require_POST
-from django.http import Http404, HttpResponse
-from django.db import models
+from django.http import Http404, JsonResponse
 from django.db.models import Count, Q, Sum
 from decimal import Decimal
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET
 import json
 import base64
 import hashlib
 import requests
 import uuid
+from decimal import InvalidOperation
+from datetime import timedelta
 from django.conf import settings
 from .forms import (
     DeliveryLoginForm, PhoneLoginForm, RegistrationForm, RestaurantRegistrationForm,
@@ -31,12 +31,11 @@ from .models import OrderStatusHistory, DeliveryPartnerLocation
 from .models import (
     RestaurantProfile, MenuItem, CATEGORY_CHOICES, DeliveryPartnerProfile, 
     CustomerAddress, Cart, CartItem, Order, OrderItem,
-    LedgerEntry, WithdrawalRequest, RestaurantEarnings, CustomerWallet, RestaurantPayoutSettings
+    LedgerEntry, WithdrawalRequest, RestaurantEarnings, CustomerWallet,
+    CustomerWalletTransaction, RestaurantPayoutSettings
 )
 from django.core.paginator import Paginator
 staff_only = user_passes_test(lambda u: u.is_active and u.is_staff, login_url="base:login")
-
-from django.db.models import Count, Q
 
 def home(request):
     restaurants = RestaurantProfile.objects.filter(
@@ -828,3 +827,702 @@ def delivery_detail(request, pk):
             "profile": profile,
         },
     )
+
+
+# ---------- customer wallet and orders ----------
+@login_required
+def wallet_view(request):
+    wallet, _ = CustomerWallet.objects.get_or_create(user=request.user)
+    transactions = wallet.transactions.order_by("-created_at")
+    return render(request, "wallet.html", {
+        "wallet": wallet,
+        "transactions": transactions,
+    })
+
+
+@login_required
+def order_history(request):
+    orders = (
+        Order.objects.filter(user=request.user)
+        .select_related("restaurant", "delivery_address")
+        .prefetch_related("items__menu_item")
+        .order_by("-created_at")
+    )
+    return render(request, "order_history.html", {"orders": orders})
+
+
+@login_required
+def view_cart(request):
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+    items = cart.items.select_related("menu_item").all()
+    subtotal = sum((item.taxable_value for item in items), Decimal("0.00"))
+    cgst = sum((item.cgst_amount for item in items), Decimal("0.00"))
+    sgst = sum((item.sgst_amount for item in items), Decimal("0.00"))
+    gst = cgst + sgst
+    delivery_fee = Decimal("40.00") if items.exists() else Decimal("0.00")
+    return render(request, "cart.html", {
+        "cart": cart,
+        "items": items,
+        "subtotal": subtotal,
+        "gst": gst,
+        "delivery_fee": delivery_fee,
+        "total": subtotal + gst + delivery_fee,
+    })
+
+
+@login_required
+@require_POST
+def add_to_cart(request, pk):
+    menu_item = get_object_or_404(
+        MenuItem.objects.select_related("restaurant"),
+        pk=pk,
+        is_available=True,
+        restaurant__status=RestaurantProfile.APPROVED,
+    )
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+    if cart.restaurant_id and cart.restaurant_id != menu_item.restaurant_id:
+        cart.items.all().delete()
+    cart.restaurant = menu_item.restaurant
+    cart.save(update_fields=["restaurant", "updated_at"])
+    item, created = CartItem.objects.get_or_create(cart=cart, menu_item=menu_item)
+    if not created:
+        item.quantity += 1
+        item.save(update_fields=["quantity"])
+    messages.success(request, f"{menu_item.name} added to your cart.")
+    return redirect("base:view_cart")
+
+
+@login_required
+@require_POST
+def update_cart_item(request, pk):
+    item = get_object_or_404(CartItem, pk=pk, cart__user=request.user)
+    if request.POST.get("action") == "increase":
+        item.quantity += 1
+        item.save(update_fields=["quantity"])
+    elif request.POST.get("action") == "decrease":
+        if item.quantity <= 1:
+            item.delete()
+        else:
+            item.quantity -= 1
+            item.save(update_fields=["quantity"])
+    else:
+        messages.error(request, "Invalid cart update.")
+    return redirect("base:view_cart")
+
+
+@login_required
+@require_POST
+def remove_cart_item(request, pk):
+    item = get_object_or_404(CartItem, pk=pk, cart__user=request.user)
+    cart = item.cart
+    item.delete()
+    if not cart.items.exists():
+        cart.restaurant = None
+        cart.save(update_fields=["restaurant", "updated_at"])
+    return redirect("base:view_cart")
+
+
+@login_required
+def checkout(request):
+    cart = get_object_or_404(Cart.objects.select_related("restaurant"), user=request.user)
+    items = list(cart.items.select_related("menu_item").all())
+    if not items or cart.restaurant is None:
+        messages.error(request, "Your cart is empty.")
+        return redirect("base:view_cart")
+    addresses = request.user.addresses.all()
+    if request.method == "POST":
+        address = get_object_or_404(
+            CustomerAddress,
+            pk=request.POST.get("address_id"),
+            user=request.user,
+        )
+        with transaction.atomic():
+            subtotal = sum((item.taxable_value for item in items), Decimal("0.00"))
+            cgst = sum((item.cgst_amount for item in items), Decimal("0.00"))
+            sgst = sum((item.sgst_amount for item in items), Decimal("0.00"))
+            gst = cgst + sgst
+            delivery_fee = Decimal("40.00")
+            total = subtotal + gst + delivery_fee
+            address_text = (
+                f"{address.recipient_name}, {address.house_flat_no}, "
+                f"{address.street_area}, {address.city}, {address.state} "
+                f"{address.pin_code}, Phone: {address.phone_number}"
+            )
+            order = Order.objects.create(
+                user=request.user,
+                restaurant=cart.restaurant,
+                delivery_address=address,
+                delivery_address_text=address_text,
+                subtotal=subtotal,
+                gst=gst,
+                taxable_subtotal=subtotal,
+                total_cgst=cgst,
+                total_sgst=sgst,
+                delivery_fee=delivery_fee,
+                total_amount=total,
+                transaction_id=uuid.uuid4().hex.upper(),
+            )
+            OrderItem.objects.bulk_create([
+                OrderItem(
+                    order=order,
+                    menu_item=item.menu_item,
+                    item_name=item.menu_item.name,
+                    serving_unit=item.menu_item.serving_unit,
+                    pieces_per_serving=item.menu_item.pieces_per_serving,
+                    quantity_in_grams_or_ml=item.menu_item.quantity_in_grams_or_ml,
+                    price=item.menu_item.price,
+                    quantity=item.quantity,
+                    total=item.item_total,
+                    taxable_value=item.taxable_value,
+                    cgst_rate=item.menu_item.cgst_rate,
+                    sgst_rate=item.menu_item.sgst_rate,
+                    cgst_amount=item.cgst_amount,
+                    sgst_amount=item.sgst_amount,
+                    tax_inclusive=item.menu_item.tax_inclusive,
+                )
+                for item in items
+            ])
+            cart.items.all().delete()
+            cart.restaurant = None
+            cart.save(update_fields=["restaurant", "updated_at"])
+        return redirect("base:pay", order_id=order.pk)
+
+    subtotal = sum((item.taxable_value for item in items), Decimal("0.00"))
+    cgst = sum((item.cgst_amount for item in items), Decimal("0.00"))
+    sgst = sum((item.sgst_amount for item in items), Decimal("0.00"))
+    gst = cgst + sgst
+    delivery_fee = Decimal("40.00")
+    return render(request, "checkout.html", {
+        "cart": cart,
+        "restaurant": cart.restaurant,
+        "items": items,
+        "addresses": addresses,
+        "subtotal": subtotal,
+        "gst": gst,
+        "delivery_fee": delivery_fee,
+        "total": subtotal + gst + delivery_fee,
+    })
+
+
+@login_required
+def order_success(request, pk):
+    order = get_object_or_404(Order, pk=pk, user=request.user, payment_status="success")
+    return render(request, "order_success.html", {"order": order})
+
+
+@login_required
+def order_detail(request, pk):
+    order = get_object_or_404(
+        Order.objects.select_related("restaurant", "delivery_address"),
+        pk=pk,
+        user=request.user,
+    )
+    return render(request, "order_detail.html", {"order": order})
+
+
+@login_required
+def track_order(request, pk):
+    order = get_object_or_404(
+        Order.objects.select_related(
+            "restaurant", "delivery_address", "delivery_partner__user"
+        ).prefetch_related("items", "status_history"),
+        pk=pk,
+        user=request.user,
+    )
+    return render(request, "order_tracking.html", {
+        "order": order,
+        "status_history": order.status_history.order_by("timestamp"),
+    })
+
+
+@login_required
+@require_GET
+def get_live_location(request, pk):
+    order = get_object_or_404(Order, pk=pk, user=request.user)
+    if order.delivery_partner_id is None:
+        return JsonResponse({"detail": "Delivery location is not available."}, status=404)
+    location = get_object_or_404(DeliveryPartnerLocation, partner=order.delivery_partner)
+    return JsonResponse({
+        "lat": float(location.latitude),
+        "lng": float(location.longitude),
+        "updated_at": location.last_updated.isoformat(),
+    })
+
+
+@login_required
+def invoice_view(request, order_id):
+    order = get_object_or_404(
+        Order.objects.select_related("restaurant", "user", "delivery_address"),
+        pk=order_id,
+    )
+    if order.user_id != request.user.id and not request.user.is_staff:
+        raise Http404
+    response = render(request, "invoice.html", {
+        "order": order,
+        "restaurant": order.restaurant,
+        "customer": order.user,
+    })
+    if request.GET.get("download") == "true":
+        response["Content-Disposition"] = f'attachment; filename="invoice_{order.pk}.html"'
+    return response
+
+
+@login_required
+def pay(request, order_id):
+    order = get_object_or_404(Order, pk=order_id, user=request.user)
+    if order.payment_status == "success":
+        return redirect("base:order_success", pk=order.pk)
+    if not settings.PHONEPE_MERCHANT_ID or not settings.PHONEPE_SALT_KEY:
+        messages.error(request, "Online payment is not configured. Please contact support.")
+        return redirect("base:order_detail", pk=order.pk)
+
+    api_path = "/pg/v1/pay"
+    api_host = (
+        "https://api-preprod.phonepe.com/apis/pg-sandbox"
+        if settings.PHONEPE_ENV.upper() == "UAT"
+        else "https://api.phonepe.com/apis/hermes"
+    )
+    return_url = request.build_absolute_uri(reverse("base:payment_return", args=[order.pk]))
+    payload = {
+        "merchantId": settings.PHONEPE_MERCHANT_ID,
+        "merchantTransactionId": order.transaction_id,
+        "merchantUserId": str(request.user.pk),
+        "amount": int(order.total_amount * 100),
+        "redirectUrl": return_url,
+        "redirectMode": "POST",
+        "callbackUrl": return_url,
+        "paymentInstrument": {"type": "PAY_PAGE"},
+    }
+    encoded_payload = base64.b64encode(json.dumps(payload).encode("utf-8")).decode("ascii")
+    signature = hashlib.sha256(
+        f"{encoded_payload}{api_path}{settings.PHONEPE_SALT_KEY}".encode("utf-8")
+    ).hexdigest()
+    try:
+        response = requests.post(
+            f"{api_host}{api_path}",
+            json={"request": encoded_payload},
+            headers={"Content-Type": "application/json",
+                     "X-VERIFY": f"{signature}###{settings.PHONEPE_SALT_INDEX}"},
+            timeout=20,
+        )
+        response.raise_for_status()
+        result = response.json()
+    except requests.RequestException:
+        messages.error(request, "The payment provider could not be reached. Please retry.")
+        return redirect("base:order_detail", pk=order.pk)
+    except ValueError:
+        messages.error(request, "The payment provider returned an invalid response.")
+        return redirect("base:order_detail", pk=order.pk)
+
+    redirect_url = (
+        result.get("data", {}).get("instrumentResponse", {}).get("redirectInfo", {}).get("url")
+        if result.get("success")
+        else None
+    )
+    if not redirect_url:
+        messages.error(request, result.get("message") or "Unable to start payment.")
+        return redirect("base:order_detail", pk=order.pk)
+    return redirect(redirect_url)
+
+
+@csrf_exempt
+def payment_return(request, uid):
+    order = get_object_or_404(Order, pk=uid)
+    if not settings.PHONEPE_MERCHANT_ID or not settings.PHONEPE_SALT_KEY:
+        messages.error(request, "Payment status could not be verified.")
+        return redirect("base:order_detail", pk=order.pk)
+    api_path = (
+        f"/pg/v1/status/{settings.PHONEPE_MERCHANT_ID}/{order.transaction_id}"
+    )
+    api_host = (
+        "https://api-preprod.phonepe.com/apis/pg-sandbox"
+        if settings.PHONEPE_ENV.upper() == "UAT"
+        else "https://api.phonepe.com/apis/hermes"
+    )
+    signature = hashlib.sha256(
+        f"{api_path}{settings.PHONEPE_SALT_KEY}".encode("utf-8")
+    ).hexdigest()
+    try:
+        response = requests.get(
+            f"{api_host}{api_path}",
+            headers={"Content-Type": "application/json",
+                     "X-VERIFY": f"{signature}###{settings.PHONEPE_SALT_INDEX}",
+                     "X-MERCHANT-ID": settings.PHONEPE_MERCHANT_ID},
+            timeout=20,
+        )
+        response.raise_for_status()
+        result = response.json()
+    except requests.RequestException:
+        messages.error(request, "The payment provider could not be reached to verify payment.")
+        return redirect("base:order_detail", pk=order.pk)
+    except ValueError:
+        messages.error(request, "The payment provider returned an invalid status response.")
+        return redirect("base:order_detail", pk=order.pk)
+
+    data = result.get("data", {})
+    if result.get("success") and data.get("responseCode") == "PAYMENT_SUCCESS":
+        with transaction.atomic():
+            order = Order.objects.select_for_update().get(pk=order.pk)
+            if order.payment_status != "success":
+                order.payment_status = "success"
+                order.status = "paid"
+                order.provider_reference_id = data.get("transactionId", "")
+                order.save(update_fields=[
+                    "payment_status", "status", "provider_reference_id", "updated_at"
+                ])
+                order.process_payment_success()
+        return redirect("base:order_success", pk=order.pk)
+    if data.get("responseCode") in {"PAYMENT_ERROR", "PAYMENT_DECLINED"}:
+        order.payment_status = "failed"
+        order.save(update_fields=["payment_status", "updated_at"])
+        messages.error(request, "Payment was not successful. You may retry.")
+    else:
+        messages.info(request, "Payment is still being processed.")
+    return redirect("base:order_detail", pk=order.pk)
+
+
+# ---------- restaurant financials ----------
+@restaurant_required
+def restaurant_earnings_dashboard(request):
+    if request.restaurant.status != RestaurantProfile.APPROVED:
+        return redirect("base:restaurant_documents")
+    earnings, _ = RestaurantEarnings.objects.get_or_create(restaurant=request.restaurant)
+    transactions = (
+        LedgerEntry.objects.filter(order__restaurant=request.restaurant)
+        .select_related("order")
+        .order_by("-created_at")
+    )
+    return render(request, "restaurant_earnings.html", {
+        "earnings": earnings,
+        "transactions": transactions,
+        "ledgers": transactions.filter(transaction_type="order_payment"),
+    })
+
+
+@restaurant_required
+def restaurant_commission_history(request):
+    if request.restaurant.status != RestaurantProfile.APPROVED:
+        return redirect("base:restaurant_documents")
+    ledgers = (
+        LedgerEntry.objects.filter(
+            order__restaurant=request.restaurant,
+            transaction_type="order_payment",
+        )
+        .select_related("order", "order__user", "order__restaurant")
+        .prefetch_related("order__items")
+        .order_by("-created_at")
+    )
+    return render(request, "restaurant_commission_history.html", {"ledgers": ledgers})
+
+
+@restaurant_required
+def restaurant_all_orders(request):
+    if request.restaurant.status != RestaurantProfile.APPROVED:
+        return redirect("base:restaurant_documents")
+    orders = (
+        Order.objects.filter(restaurant=request.restaurant)
+        .select_related("user", "delivery_address", "delivery_partner")
+        .prefetch_related("items__menu_item", "ledger_entries")
+        .order_by("-created_at")
+    )
+    return render(request, "restaurant/all_orders.html", {"orders": orders})
+
+
+def _payout_settings_ready(payout_settings):
+    if payout_settings.payout_method == "bank":
+        return all((
+            payout_settings.bank_name,
+            payout_settings.account_holder_name,
+            payout_settings.account_number,
+            payout_settings.ifsc_code,
+        ))
+    if payout_settings.payout_method == "upi":
+        return bool(payout_settings.upi_id and payout_settings.upi_account_holder_name)
+    return bool(payout_settings.qr_code_image)
+
+
+@restaurant_required
+def restaurant_payout_settings(request):
+    if request.restaurant.status != RestaurantProfile.APPROVED:
+        return redirect("base:restaurant_documents")
+
+    payout_settings, _ = RestaurantPayoutSettings.objects.get_or_create(
+        restaurant=request.restaurant
+    )
+    earnings, _ = RestaurantEarnings.objects.get_or_create(restaurant=request.restaurant)
+    withdrawals = request.restaurant.withdrawals.order_by("-created_at")
+    recent_withdrawal = withdrawals.filter(
+        created_at__gte=timezone.now() - timedelta(days=7)
+    ).first()
+
+    if request.method == "POST" and "amount" in request.POST:
+        try:
+            amount = Decimal(request.POST.get("amount", "").strip())
+        except (InvalidOperation, ValueError):
+            messages.error(request, "Enter a valid withdrawal amount.")
+            return redirect("base:restaurant_payout_settings")
+        if (not amount.is_finite() or amount <= 0 or amount.adjusted() > 9):
+            messages.error(request, "Enter a positive withdrawal amount within the supported range.")
+            return redirect("base:restaurant_payout_settings")
+        try:
+            has_fractional_paisa = amount != amount.quantize(Decimal("0.01"))
+        except InvalidOperation:
+            has_fractional_paisa = True
+        if has_fractional_paisa:
+            messages.error(request, "Withdrawal amounts may have at most two decimal places.")
+            return redirect("base:restaurant_payout_settings")
+        if not _payout_settings_ready(payout_settings):
+            messages.error(request, "Complete payout settings before requesting a withdrawal.")
+            return redirect("base:restaurant_payout_settings")
+
+        with transaction.atomic():
+            locked_earnings = RestaurantEarnings.objects.select_for_update().get(
+                restaurant=request.restaurant
+            )
+            recent_withdrawal = request.restaurant.withdrawals.filter(
+                created_at__gte=timezone.now() - timedelta(days=7)
+            ).exists()
+            if recent_withdrawal:
+                messages.error(request, "You can submit a withdrawal request once every seven days.")
+            elif amount > locked_earnings.available_balance:
+                messages.error(request, "The requested amount exceeds your available balance.")
+            else:
+                withdrawal = WithdrawalRequest.objects.create(
+                    restaurant=request.restaurant,
+                    amount=amount,
+                    destination_details=payout_settings.get_snapshot(),
+                )
+                locked_earnings.available_balance -= amount
+                locked_earnings.reserved_balance += amount
+                locked_earnings.save(update_fields=[
+                    "available_balance", "reserved_balance", "updated_at"
+                ])
+                messages.success(request, f"Withdrawal request #{withdrawal.pk} submitted.")
+        return redirect("base:restaurant_payout_settings")
+
+    if request.method == "POST":
+        method = request.POST.get("payout_method", "")
+        if method not in dict(RestaurantPayoutSettings.PAYOUT_METHOD_CHOICES):
+            messages.error(request, "Select a valid payout method.")
+        else:
+            payout_settings.payout_method = method
+            payout_settings.account_holder_name = request.POST.get("account_holder_name", "").strip()
+            payout_settings.bank_name = request.POST.get("bank_name", "").strip()
+            payout_settings.account_number = request.POST.get("account_number", "").strip()
+            payout_settings.ifsc_code = request.POST.get("ifsc_code", "").strip().upper()
+            payout_settings.upi_id = request.POST.get("upi_id", "").strip()
+            payout_settings.upi_account_holder_name = request.POST.get(
+                "upi_account_holder_name", ""
+            ).strip()
+            if "qr_code_image" in request.FILES:
+                payout_settings.qr_code_image = request.FILES["qr_code_image"]
+            payout_settings.save()
+            messages.success(request, "Payout settings saved.")
+        return redirect("base:restaurant_payout_settings")
+
+    return render(request, "restaurant_payout_settings.html", {
+        "settings": payout_settings,
+        "earnings": earnings,
+        "withdrawals": withdrawals,
+        "recent_withdrawal": recent_withdrawal,
+        "can_withdraw": recent_withdrawal is None,
+        "payout_ready": _payout_settings_ready(payout_settings),
+        "payout_snapshot": payout_settings.get_snapshot(),
+    })
+
+
+# ---------- admin financials ----------
+@staff_only
+def admin_financial_dashboard(request):
+    if request.method == "POST":
+        try:
+            request_id = int(request.POST.get("request_id", ""))
+        except ValueError:
+            messages.error(request, "Invalid withdrawal request.")
+            return redirect("base:admin_financial_dashboard")
+        action = request.POST.get("action")
+        with transaction.atomic():
+            withdrawal = get_object_or_404(
+                WithdrawalRequest.objects.select_for_update().select_related("restaurant"),
+                pk=request_id,
+            )
+            earnings = get_object_or_404(
+                RestaurantEarnings.objects.select_for_update(),
+                restaurant=withdrawal.restaurant,
+            )
+            if action == "approve" and withdrawal.status == "pending":
+                withdrawal.status = "approved"
+                withdrawal.admin_notes = f"Approved by {request.user.get_username()}."
+                withdrawal.save(update_fields=["status", "admin_notes", "updated_at"])
+                messages.success(request, f"Withdrawal #{withdrawal.pk} approved.")
+            elif action == "pay" and withdrawal.status == "approved":
+                reference = request.POST.get("payout_reference", "").strip()
+                if not reference:
+                    messages.error(request, "Enter the payout transaction reference.")
+                else:
+                    if earnings.reserved_balance < withdrawal.amount:
+                        messages.error(request, "Reserved balance is insufficient; payout was not recorded.")
+                    else:
+                        withdrawal.status = "paid"
+                        withdrawal.payout_reference = reference
+                        withdrawal.save(update_fields=[
+                            "status", "payout_reference", "updated_at"
+                        ])
+                        earnings.reserved_balance -= withdrawal.amount
+                        earnings.withdrawn_balance += withdrawal.amount
+                        earnings.save(update_fields=[
+                            "reserved_balance", "withdrawn_balance", "updated_at"
+                        ])
+                        LedgerEntry.objects.create(
+                            reference=f"WD_{withdrawal.pk}_{uuid.uuid4().hex[:8].upper()}",
+                            amount=withdrawal.amount,
+                            currency="INR",
+                            restaurant_earnings=withdrawal.amount,
+                            transaction_type="withdrawal",
+                            direction="debit",
+                            status="completed",
+                        )
+                        messages.success(request, f"Withdrawal #{withdrawal.pk} marked as paid.")
+            elif action == "reject" and withdrawal.status in {"pending", "approved"}:
+                reason = request.POST.get("rejection_reason", "").strip()
+                if not reason:
+                    messages.error(request, "Enter a reason for rejecting the withdrawal.")
+                elif earnings.reserved_balance < withdrawal.amount:
+                    messages.error(request, "Reserved balance is insufficient; withdrawal was not changed.")
+                else:
+                    withdrawal.status = "rejected"
+                    withdrawal.rejection_reason = reason
+                    withdrawal.save(update_fields=[
+                        "status", "rejection_reason", "updated_at"
+                    ])
+                    earnings.reserved_balance -= withdrawal.amount
+                    earnings.available_balance += withdrawal.amount
+                    earnings.save(update_fields=[
+                        "reserved_balance", "available_balance", "updated_at"
+                    ])
+                    messages.success(request, f"Withdrawal #{withdrawal.pk} rejected; funds restored.")
+            else:
+                messages.error(request, "This withdrawal cannot be changed using that action.")
+        return redirect("base:admin_financial_dashboard")
+
+    ledger_entries = (
+        LedgerEntry.objects.select_related(
+            "order", "order__restaurant", "order__user"
+        )
+        .order_by("-created_at")
+    )
+    totals = RestaurantEarnings.objects.aggregate(
+        total_sales=Sum("total_eligible_sales"),
+        total_commission=Sum("total_commission_deducted"),
+        total_earnings=Sum("net_earnings"),
+    )
+    return render(request, "admin_financial_dashboard.html", {
+        "total_sales": totals["total_sales"] or Decimal("0.00"),
+        "total_commission": totals["total_commission"] or Decimal("0.00"),
+        "total_earnings": totals["total_earnings"] or Decimal("0.00"),
+        "withdrawals": WithdrawalRequest.objects.select_related(
+            "restaurant", "restaurant__user"
+        ).order_by("-created_at"),
+        "ledgers": ledger_entries,
+    })
+
+
+@staff_only
+def admin_ledger_detail(request, pk):
+    entry = get_object_or_404(
+        LedgerEntry.objects.select_related(
+            "order", "order__user", "order__restaurant"
+        ),
+        pk=pk,
+    )
+    return render(request, "admin_ledger_detail.html", {
+        "entry": entry,
+        "order": entry.order,
+    })
+
+
+@staff_only
+def admin_restaurant_wallets(request):
+    wallets = RestaurantEarnings.objects.select_related(
+        "restaurant", "restaurant__user"
+    ).order_by("restaurant__restaurant_name")
+    return render(request, "admin_restaurant_wallets.html", {"wallets": wallets})
+
+
+@staff_only
+def admin_commission_history(request):
+    ledgers = (
+        LedgerEntry.objects.filter(transaction_type="order_payment")
+        .select_related("order", "order__restaurant", "order__user")
+        .prefetch_related("order__items")
+        .order_by("-created_at")
+    )
+    return render(request, "admin_commission_history.html", {"ledgers": ledgers})
+
+
+@staff_only
+def admin_orders(request):
+    orders = (
+        Order.objects.select_related("restaurant", "user", "delivery_partner")
+        .prefetch_related("items", "ledger_entries")
+        .order_by("-created_at")
+    )
+    return render(request, "dashboard/orders.html", {"orders": orders})
+
+
+@staff_only
+@require_POST
+def admin_assign_delivery(request, pk):
+    order = get_object_or_404(Order, pk=pk)
+    partner = get_object_or_404(
+        DeliveryPartnerProfile,
+        pk=request.POST.get("delivery_partner_id"),
+        status=DeliveryPartnerProfile.APPROVED,
+    )
+    order.delivery_partner = partner
+    order.save(update_fields=["delivery_partner", "updated_at"])
+    messages.success(request, f"Delivery partner assigned to order #{order.pk}.")
+    return redirect("base:admin_orders")
+
+
+# ---------- account profiles ----------
+@restaurant_required
+def restaurant_profile(request):
+    return render(request, "restaurant/profile.html", {
+        "profile": request.restaurant,
+        "owner": request.user,
+    })
+
+
+@delivery_required
+def delivery_profile(request):
+    return render(request, "delivery/profile.html", {
+        "profile": request.partner,
+        "owner": request.user,
+    })
+
+
+@delivery_required
+@require_POST
+def delivery_update_location(request):
+    if request.partner.status != DeliveryPartnerProfile.APPROVED:
+        return JsonResponse({"detail": "Your account is not approved."}, status=403)
+    try:
+        coordinates = json.loads(request.body)
+        latitude = Decimal(str(coordinates["lat"]))
+        longitude = Decimal(str(coordinates["lng"]))
+    except (ValueError, TypeError, KeyError, InvalidOperation):
+        return JsonResponse({"detail": "Valid latitude and longitude are required."}, status=400)
+    if (not latitude.is_finite() or not longitude.is_finite()
+            or not Decimal("-90") <= latitude <= Decimal("90")
+            or not Decimal("-180") <= longitude <= Decimal("180")):
+        return JsonResponse({"detail": "Coordinates are outside the valid range."}, status=400)
+    location, _ = DeliveryPartnerLocation.objects.update_or_create(
+        partner=request.partner,
+        defaults={"latitude": latitude, "longitude": longitude},
+    )
+    return JsonResponse({
+        "lat": float(location.latitude),
+        "lng": float(location.longitude),
+        "updated_at": location.last_updated.isoformat(),
+    })
