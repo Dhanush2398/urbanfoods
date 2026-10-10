@@ -1,202 +1,159 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Cart | UrbanFoods</title>
-    <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    
-    <link rel="stylesheet" href="assets/css/variables.css">
-    <link rel="stylesheet" href="assets/css/global.css">
-    <link rel="stylesheet" href="assets/css/components.css">
+{% extends "base.html" %}
+{% load static %}
 
-    <style>
-        .cart-item {
-            border-bottom: 1px solid var(--qb-border);
-            padding-bottom: 20px;
-            margin-bottom: 20px;
-        }
-        .cart-item:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-            margin-bottom: 0;
-        }
-        .cart-img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: var(--qb-radius-sm);
-        }
-        .qty-btn {
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 5px;
-            border: 1px solid var(--qb-border);
-            background: var(--qb-white);
-            color: var(--qb-orange);
-            font-weight: bold;
-            transition: all var(--qb-transition-fast);
-        }
-        .qty-btn:hover {
-            background: var(--qb-orange-light);
-            border-color: var(--qb-orange);
-        }
-        .summary-card {
-            background: var(--qb-white);
-            border-radius: var(--qb-radius-lg);
-            padding: 25px;
-            box-shadow: var(--qb-shadow-sm);
-            border: 1px solid var(--qb-border);
-            position: sticky;
-            top: 100px;
-        }
-        .coupon-input {
-            border-radius: var(--qb-radius-md) 0 0 var(--qb-radius-md);
-        }
-        .coupon-btn {
-            border-radius: 0 var(--qb-radius-md) var(--qb-radius-md) 0;
-        }
-    </style>
-</head>
-<body>
+{% block content %}
+<style>
+    .cart-item {
+        border-bottom: 1px solid var(--qb-border);
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+    }
+    .cart-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: 0;
+    }
+    .cart-img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: var(--qb-radius-sm);
+    }
+    .qty-btn {
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 5px;
+        border: 1px solid var(--qb-border);
+        background: var(--qb-white);
+        color: var(--qb-orange);
+        font-weight: bold;
+        transition: all var(--qb-transition-fast);
+        padding: 0;
+    }
+    .qty-btn:hover {
+        background: var(--qb-orange-light);
+        border-color: var(--qb-orange);
+    }
+    .summary-card {
+        background: var(--qb-white);
+        border-radius: var(--qb-radius-lg);
+        padding: 25px;
+        box-shadow: var(--qb-shadow-sm);
+        border: 1px solid var(--qb-border);
+        position: sticky;
+        top: 100px;
+    }
+</style>
+<main style="padding-top: 120px; padding-bottom: 80px; min-height: 80vh;">
+    <div class="container">
+        {% for m in messages %}
+        <div class="alert alert-{% if m.tags == 'error' %}danger{% else %}{{ m.tags }}{% endif %} py-2">{{ m }}</div>
+        {% endfor %}
+        <div class="row animate-fade-up">
+            {% if items %}
+            <div class="col-lg-8 mb-5 mb-lg-0">
+                <h2 class="fw-extrabold text-navy mb-4">Your Cart ({{ items.count }} Items)</h2>
+                <div class="card card-qb p-4 mb-4">
+                    <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                        <i class="fa-solid fa-store text-orange fs-4 me-3"></i>
+                        <div>
+                            <h5 class="fw-bold mb-0">{{ cart.restaurant.restaurant_name }}</h5>
+                            <small class="text-muted">{{ cart.restaurant.address }}, {{ cart.restaurant.city }}</small>
+                        </div>
+                    </div>
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg fixed-top bg-white shadow-sm py-3 transition-normal">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center fw-extrabold text-navy" href="index.html">
-                <img src="assets/images/logo.svg" alt="UrbanFoods Logo" width="40" height="40" class="me-2">
-                UrbanFoods
-            </a>
-            <div class="collapse navbar-collapse" id="navbarMain">
-                <ul class="navbar-nav ms-auto align-items-lg-center fw-semibold">
-                    <li class="nav-item"><a class="nav-link px-3" href="index.html">Home</a></li>
-                    <li class="nav-item"><a class="nav-link px-3" href="restaurants.html">Restaurants</a></li>
-                    <li class="nav-item"><a class="nav-link px-3 text-orange" href="cart.html"><i class="fa-solid fa-cart-shopping fs-5"></i></a></li>
-                </ul>
-            </div>
+                    {% for item in items %}
+                    <div class="cart-item d-flex align-items-center flex-wrap gap-3">
+                        {% if item.menu_item.image %}
+                        <img src="{{ item.menu_item.image.url }}" class="cart-img" alt="{{ item.menu_item.name }}">
+                        {% else %}
+                        <div class="cart-img bg-light d-flex align-items-center justify-content-center text-muted"><i class="fa-solid fa-utensils"></i></div>
+                        {% endif %}
+                        <div class="flex-grow-1" style="min-width: 150px;">
+                            <span class="badge-veg mb-1"></span>
+                            <h6 class="fw-semibold mb-1">{{ item.menu_item.name }}</h6>
+                            <p class="text-muted small mb-0">
+                                {% if item.menu_item.pieces_per_serving %}
+                                    <span class="fw-bold text-orange">{% widthratio item.menu_item.pieces_per_serving 1 item.quantity %} Pieces Total</span> 
+                                    ({{ item.menu_item.pieces_per_serving }} / {{ item.menu_item.serving_unit }})
+                                {% else %}
+                                    {{ item.menu_item.serving_unit }}
+                                {% endif %}
+                                {% if item.menu_item.quantity_in_grams_or_ml %}
+                                    | {% widthratio item.menu_item.quantity_in_grams_or_ml 1 item.quantity %} g/ml
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            <div class="mb-2">
+            <p class="fw-bold text-navy mb-0">&#8377;{{ item.item_total }} <small class="text-muted fw-normal">(&#8377;{{ item.menu_item.price }} each)</small></p>
+            <small class="text-muted d-block" style="font-size: 0.75rem;">
+                Taxable: &#8377;{{ item.taxable_value }}
+                {% if item.cgst_amount %}| CGST: &#8377;{{ item.cgst_amount }} ({{ item.menu_item.cgst_rate }}%){% endif %}
+                {% if item.sgst_amount %}| SGST: &#8377;{{ item.sgst_amount }} ({{ item.menu_item.sgst_rate }}%){% endif %}
+            </small>
         </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main style="padding-top: 120px; padding-bottom: 80px;">
-        <div class="container">
-            <div class="row animate-fade-up">
-                
-                <!-- Cart Items -->
-                <div class="col-lg-8 mb-5 mb-lg-0">
-                    <h2 class="fw-extrabold text-navy mb-4">Your Cart (3 Items)</h2>
-                    
-                    <div class="card card-qb p-4 mb-4">
-                        <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
-                            <i class="fa-solid fa-store text-orange fs-4 me-3"></i>
-                            <div>
-                                <h5 class="fw-bold mb-0">Punjabi Tadka</h5>
-                                <small class="text-muted">Delivery in 25 mins</small>
-                            </div>
-                        </div>
-
-                        <!-- Item 1 -->
-                        <div class="cart-item d-flex align-items-center">
-                            <img src="https://images.unsplash.com/photo-1601050690597-df0568f70950?q=80&w=600&h=600&fit=crop" class="cart-img me-3" alt="Item" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1601050690597-df0568f70950?q=80&w=400&h=400&fit=crop';">
-                            <div class="flex-grow-1">
-                                <span class="badge-nonveg mb-1"></span>
-                                <h6 class="fw-semibold mb-1">Chicken Meals</h6>
-                                <p class="text-muted small mb-0">Full Plate, Raita included</p>
-                            </div>
-                            <div class="text-end">
-                                <p class="fw-bold text-navy mb-2">&#8377;320</p>
-                                <div class="d-flex align-items-center">
-                                    <button class="qty-btn">-</button>
-                                    <span class="mx-3 fw-semibold">1</span>
-                                    <button class="qty-btn">+</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Item 2 -->
-                        <div class="cart-item d-flex align-items-center">
-                            <img src="https://instamart-media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,h_600,w_600//InstamartAssets/idli_vada.webp" class="cart-img me-3" alt="Item" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1601050690597-df0568f70950?q=80&w=400&h=400&fit=crop';">
-                            <div class="flex-grow-1">
-                                <span class="badge-veg mb-1"></span>
-                                <h6 class="fw-semibold mb-1">Paneer Butter Masala</h6>
-                                <p class="text-muted small mb-0">Medium Spice, with Naan</p>
-                            </div>
-                            <div class="text-end">
-                                <p class="fw-bold text-navy mb-2">&#8377;280</p>
-                                <div class="d-flex align-items-center">
-                                    <button class="qty-btn">-</button>
-                                    <span class="mx-3 fw-semibold">1</span>
-                                    <button class="qty-btn">+</button>
-                                </div>
+                            <div class="d-flex align-items-center justify-content-end gap-2">
+                                <form method="post" action="{% url 'base:update_cart_item' item.pk %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="decrease">
+                                    <button class="qty-btn" type="submit">-</button>
+                                </form>
+                                <span class="fw-semibold mx-2">{{ item.quantity }}</span>
+                                <form method="post" action="{% url 'base:update_cart_item' item.pk %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="increase">
+                                    <button class="qty-btn" type="submit">+</button>
+                                </form>
+                                <form method="post" action="{% url 'base:remove_cart_item' item.pk %}" class="ms-3">
+                                    {% csrf_token %}
+                                    <button class="btn btn-sm btn-outline-danger" type="submit"><i class="fa-solid fa-trash"></i></button>
+                                </form>
                             </div>
                         </div>
                     </div>
-
-                    <div class="card card-qb p-4">
-                        <h6 class="fw-bold mb-3"><i class="fa-regular fa-comment-dots text-orange me-2"></i>Add delivery instructions</h6>
-                        <textarea class="form-control form-control-qb" rows="2" placeholder="E.g., Leave at the front door, ring the bell..."></textarea>
-                    </div>
+                    {% endfor %}
                 </div>
-
-                <!-- Order Summary -->
-                <div class="col-lg-4">
-                    <div class="summary-card">
-                        <h4 class="fw-bold mb-4">Order Summary</h4>
-                        
-                        <!-- Coupon -->
-                        <div class="mb-4">
-                            <label class="form-label small fw-semibold text-muted">Apply Coupon</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control form-control-qb coupon-input" placeholder="Enter code">
-                                <button class="btn btn-navy bg-navy text-white coupon-btn px-4" type="button">Apply</button>
-                            </div>
-                        </div>
-
-                        <hr class="text-muted">
-
-                        <!-- Breakdown -->
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Subtotal</span>
-                            <span class="fw-semibold">&#8377;600</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">GST (5%)</span>
-                            <span class="fw-semibold">&#8377;30</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Delivery Fee</span>
-                            <span class="fw-semibold">&#8377;30</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-3 text-success">
-                            <span>Discount (PROMO10)</span>
-                            <span class="fw-semibold">-&#8377;60</span>
-                        </div>
-
-                        <hr class="text-muted">
-
-                        <!-- Total -->
-                        <div class="d-flex justify-content-between align-items-end mb-4">
-                            <div>
-                                <span class="d-block fw-bold text-navy fs-5">Total</span>
-                                <small class="text-muted">Incl. GST and delivery</small>
-                            </div>
-                            <span class="fw-extrabold text-orange fs-4">&#8377;600</span>
-                        </div>
-
-                        <a href="checkout.html" class="btn btn-primary-qb w-100 btn-lg shadow-sm">Proceed to Checkout</a>
-                    </div>
-                </div>
-
             </div>
-        </div>
-    </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+            <div class="col-lg-4">
+                <div class="summary-card">
+                    <h4 class="fw-bold mb-4">Order Summary</h4>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Subtotal</span>
+                        <span class="fw-semibold">&#8377;{{ subtotal }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">GST (5%)</span>
+                        <span class="fw-semibold">&#8377;{{ gst }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Delivery Fee</span>
+                        <span class="fw-semibold">&#8377;{{ delivery_fee }}</span>
+                    </div>
+                    <hr class="text-muted">
+                    <div class="d-flex justify-content-between align-items-end mb-4">
+                        <div>
+                            <span class="d-block fw-bold text-navy fs-5">Total</span>
+                            <small class="text-muted">Incl. GST and delivery</small>
+                        </div>
+                        <span class="fw-extrabold text-orange fs-4">&#8377;{{ total }}</span>
+                    </div>
+                    <a href="{% url 'base:checkout' %}" class="btn btn-primary-qb w-100 btn-lg shadow-sm">Proceed to Checkout</a>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12 text-center py-5">
+                <i class="fa-solid fa-cart-shopping fa-4x text-muted mb-4"></i>
+                <h3 class="fw-bold text-navy">Your cart is empty</h3>
+                <p class="text-muted">Browse our restaurants and add some delicious vegetarian food to your cart!</p>
+                <a href="{% url 'base:restaurants' %}" class="btn btn-primary-qb px-4 py-2 mt-3">Browse Restaurants</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</main>
+{% endblock %}

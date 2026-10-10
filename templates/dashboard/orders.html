@@ -1,0 +1,122 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Order History{% endblock %}
+{% block content %}
+<div class="content-body">
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col-12 d-flex justify-content-between align-items-center">
+                <h2 class="font-w600 mb-0">Order History</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-4">Order Details</th>
+                                        <th>Restaurant & Customer</th>
+                                        <th>Food Items</th>
+                                        <th>Financial Breakdown</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in orders %}
+                                    <tr>
+                                        <td class="ps-4">
+                                            <strong>#{{ order.id }}</strong><br>
+                                            <small class="text-muted">{{ order.created_at|date:"M d, Y h:i A" }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="mb-2">
+                                                <i class="fa fa-store text-orange me-1"></i> <span class="fw-bold">{{ order.restaurant.restaurant_name|default:"N/A" }}</span>
+                                            </div>
+                                            <div>
+                                                <i class="fa fa-user text-muted me-1"></i> <span>{{ order.user.get_full_name|default:order.user.username }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <ul class="list-unstyled mb-0 small">
+                                                {% for item in order.items.all %}
+                                                    <li>{{ item.quantity }}x {{ item.item_name }} (₹{{ item.price }})</li>
+                                                {% empty %}
+                                                    <li class="text-muted">No items</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </td>
+                                        <td>
+                                            <div class="small" style="min-width: 180px;">
+                                                <div class="d-flex justify-content-between mb-1">
+                                                    <span class="text-muted">Subtotal:</span>
+                                                    <span>₹{{ order.subtotal }}</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-1">
+                                                    <span class="text-muted">GST:</span>
+                                                    <span>+₹{{ order.gst }}</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-1">
+                                                    <span class="text-muted">Delivery:</span>
+                                                    <span>+₹{{ order.delivery_fee }}</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between fw-bold mb-1 border-bottom pb-1">
+                                                    <span>Total Paid:</span>
+                                                    <span>₹{{ order.total_amount }}</span>
+                                                </div>
+                                                
+                                                {% with ledger=order.ledger_entries.first %}
+                                                {% if ledger and ledger.transaction_type == 'order_payment' %}
+                                                <div class="d-flex justify-content-between text-success mt-1">
+                                                    <span>Platform (10%):</span>
+                                                    <span>₹{{ ledger.platform_commission }}</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between text-primary">
+                                                    <span>Restaurant (90%):</span>
+                                                    <span>₹{{ ledger.restaurant_earnings }}</span>
+                                                </div>
+                                                {% endif %}
+                                                {% endwith %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if order.status in 'paid,accepted,preparing,ready,out_for_delivery,delivered' %}
+                                            <div class="mb-2">
+                                                <a href="{% url 'base:invoice' order.id %}" target="_blank" class="btn btn-xs btn-outline-primary" title="View Invoice"><i class="fa fa-file-invoice"></i></a>
+                                                <a href="{% url 'base:invoice' order.id %}?download=true" class="btn btn-xs btn-outline-secondary" title="Download PDF"><i class="fa fa-download"></i></a>
+                                            </div>
+                                            {% endif %}
+                                            <div class="mb-2">
+                                                <span class="badge 
+                                                    {% if order.status == 'delivered' %}bg-success
+                                                    {% elif order.status == 'rejected' or order.status == 'cancelled' %}bg-danger
+                                                    {% elif order.status == 'paid' %}bg-primary
+                                                    {% else %}bg-warning text-dark{% endif %}">
+                                                    {{ order.get_status_display }}
+                                                </span>
+                                            </div>
+                                            <div class="small text-muted mb-1">
+                                                <strong>Payment:</strong> Online ({{ order.get_payment_status_display }})
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5 text-muted">
+                                            <i class="fa fa-shopping-basket fa-3x mb-3 text-light"></i>
+                                            <h5>No orders found</h5>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

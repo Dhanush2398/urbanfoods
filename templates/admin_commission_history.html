@@ -1,0 +1,88 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Commission History - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="content-body">
+<div class="container-fluid">
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-navy mb-0">Commission History</h3>
+</div>
+
+<div class="card shadow-sm border-0 mb-4 rounded-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Order Details</th>
+                        <th>Restaurant</th>
+                        <th>Customer</th>
+                        <th>Food Items</th>
+                        <th>Financials</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in ledgers %}
+                    <tr>
+                        <td class="ps-4">
+                            <strong>#{{ entry.order.id }}</strong><br>
+                            <small class="text-muted">{{ entry.created_at|date:"M d, Y h:i A" }}</small>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                {% if entry.order.restaurant.image %}
+                                <img src="{{ entry.order.restaurant.image.url }}" width="30" height="30" class="rounded object-cover">
+                                {% endif %}
+                                <span class="fw-bold">{{ entry.order.restaurant.restaurant_name }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <p class="mb-0">{{ entry.order.user.get_full_name|default:entry.order.user.username }}</p>
+                        </td>
+                        <td>
+                            <ul class="list-unstyled mb-0 small">
+                            {% for item in entry.order.items.all %}
+                                <li>{{ item.quantity }}x {{ item.item_name }} (₹{{ item.price }})</li>
+                            {% endfor %}
+                            </ul>
+                        </td>
+                        <td>
+                            <div class="small" style="min-width: 150px;">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-muted">Eligible Subtotal:</span>
+                                    <span>₹{{ entry.eligible_food_subtotal }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-success fw-bold">Commission (10%):</span>
+                                    <span class="text-success fw-bold">₹{{ entry.platform_commission }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between border-top pt-1 mt-1">
+                                    <span class="text-muted">Restaurant Alloc:</span>
+                                    <span>₹{{ entry.restaurant_earnings }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary mb-1 d-block">{{ entry.order.get_payment_status_display }}</span>
+                            <span class="badge {% if entry.settled_at %}bg-success{% else %}bg-warning text-dark{% endif %} d-block">
+                                {% if entry.settled_at %}Settled{% else %}Pending{% endif %}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="fa fa-file-invoice-dollar fa-3x mb-3 text-light"></i>
+                            <h5>No commission records found</h5>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+{% endblock %}

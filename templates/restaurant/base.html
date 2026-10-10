@@ -140,26 +140,44 @@
                 <ul class="metismenu" id="menu">
                     <li>
                         <a class="ai-icon" href="{% url 'base:restaurant_dashboard' %}" aria-expanded="false">
-                            <i class="flaticon-025-dashboard"></i>
+                            <i class="flaticon-381-networking"></i>
                             <span class="nav-text">Dashboard</span>
                         </a>
                     </li>
                     <li>
+                        <a class="ai-icon" href="{% url 'base:restaurant_dashboard' %}#orderTabs" aria-expanded="false">
+                            <i class="flaticon-381-list-1"></i>
+                            <span class="nav-text">Order Management</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="ai-icon" href="{% url 'base:restaurant_all_orders' %}" aria-expanded="false">
+                            <i class="flaticon-381-networking"></i>
+                            <span class="nav-text">Overall Orders</span>
+                        </a>
+                    </li>
+                    <li>
                         <a class="ai-icon" href="{% url 'base:restaurant_menu' %}" aria-expanded="false">
-                            <i class="flaticon-381-notepad"></i>
-                            <span class="nav-text">Menus</span>
+                            <i class="flaticon-381-television"></i>
+                            <span class="nav-text">Menu Management</span>
                         </a>
                     </li>
                     <li>
-                        <a class="ai-icon" href="#" aria-expanded="false">
-                            <i class="flaticon-381-shopping-cart-1"></i>
-                            <span class="nav-text">Orders</span>
+                        <a class="ai-icon" href="{% url 'base:restaurant_earnings_dashboard' %}" aria-expanded="false">
+                            <i class="flaticon-381-wallet"></i>
+                            <span class="nav-text">Wallet</span>
                         </a>
                     </li>
                     <li>
-                        <a class="ai-icon" href="#" aria-expanded="false">
-                            <i class="flaticon-381-user-9"></i>
-                            <span class="nav-text">Profile</span>
+                        <a class="ai-icon" href="{% url 'base:restaurant_payout_settings' %}" aria-expanded="false">
+                            <i class="flaticon-381-controls-3"></i>
+                            <span class="nav-text">Withdrawals</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="ai-icon" href="{% url 'base:restaurant_commission_history' %}" aria-expanded="false">
+                            <i class="flaticon-381-list"></i>
+                            <span class="nav-text">Total Earnings</span>
                         </a>
                     </li>
                     <li>

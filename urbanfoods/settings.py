@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -138,5 +139,10 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 LOGIN_URL = "base:login"
+
+PHONEPE_MERCHANT_ID = os.environ.get("PHONEPE_MERCHANT_ID", "")
+PHONEPE_SALT_KEY = os.environ.get("PHONEPE_SALT_KEY", "")
+PHONEPE_SALT_INDEX = os.environ.get("PHONEPE_SALT_INDEX", "1")
+PHONEPE_ENV = os.environ.get("PHONEPE_ENV", "UAT")
 LOGIN_REDIRECT_URL = "base:home"
 LOGOUT_REDIRECT_URL = "base:login"

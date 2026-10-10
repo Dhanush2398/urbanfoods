@@ -1,0 +1,60 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Restaurant Wallets - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="content-body">
+<div class="container-fluid">
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-navy mb-0">Restaurant Wallets</h3>
+</div>
+
+<div class="card shadow-sm border-0 rounded-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Restaurant</th>
+                        <th>Total Eligible Sales</th>
+                        <th>Platform Commission</th>
+                        <th>Net Earnings</th>
+                        <th>Available Balance</th>
+                        <th>Reserved</th>
+                        <th>Withdrawn</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for w in wallets %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center gap-3">
+                                {% if w.restaurant.image %}
+                                <img src="{{ w.restaurant.image.url }}" class="rounded" width="40" height="40" style="object-fit:cover">
+                                {% endif %}
+                                <div>
+                                    <h6 class="mb-0 fw-bold">{{ w.restaurant.restaurant_name }}</h6>
+                                    <small class="text-muted">{{ w.restaurant.user.get_full_name|default:w.restaurant.user.username }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="fw-bold">₹{{ w.total_eligible_sales }}</td>
+                        <td class="text-danger fw-bold">-₹{{ w.total_commission_deducted }}</td>
+                        <td class="text-success fw-bold">₹{{ w.net_earnings }}</td>
+                        <td class="text-primary fw-bold">₹{{ w.available_balance }}</td>
+                        <td class="text-warning fw-bold text-dark">₹{{ w.reserved_balance }}</td>
+                        <td class="text-muted fw-bold">₹{{ w.withdrawn_balance }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No wallets found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</div>
+</div>
+{% endblock %}

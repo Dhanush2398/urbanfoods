@@ -1,0 +1,152 @@
+{% load static %}
+<div class="table-responsive">
+  <table class="table table-bordered table-striped align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>Order #</th>
+        <th>Date & Time</th>
+        <th>Customer & Delivery</th>
+        <th>Order Details</th>
+        <th>Financials</th>
+        <th>Status</th>
+        {% if action or reject %}
+        <th>Actions</th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      {% if status_filter == 'all' or order.status == status_filter or status_filter == 'history' and order.status in 'out_for_delivery,delivered,rejected,cancelled' %}
+      <tr>
+        <td><strong>#{{ order.id }}</strong></td>
+        <td>
+          <small>{{ order.created_at|date:"M d, Y" }}</small><br>
+          <small class="text-muted">{{ order.created_at|date:"h:i A" }}</small>
+        </td>
+        <td>
+          <p class="mb-0 fw-bold">{{ order.user.get_full_name|default:order.user.username }}</p>
+          <p class="mb-0 small text-muted"><i class="fa fa-map-marker-alt me-1 text-danger"></i>{{ order.delivery_address.area }}, {{ order.delivery_address.city }}</p>
+          <p class="mb-0 small"><i class="fa fa-phone me-1 text-success"></i>{{ order.delivery_address.phone_number }}</p>
+        </td>
+        <td>
+          <ul class="list-unstyled mb-0 small">
+            {% for item in order.items.all %}
+            <li class="mb-2 pb-2 {% if not forloop.last %}border-bottom{% endif %}">
+              <div class="d-flex align-items-start gap-2">
+                {% if item.menu_item.image %}
+                  <img src="{{ item.menu_item.image.url }}" alt="food" width="40" height="40" class="rounded object-cover">
+                {% else %}
+                  <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width:40px;height:40px;"><i class="fa fa-utensils text-muted fs-5"></i></div>
+                {% endif %}
+                <div class="w-100">
+                  <div class="d-flex justify-content-between">
+                    <strong>{{ item.quantity }}x {{ item.item_name }}</strong>
+                    <span class="fw-bold">₹{{ item.total }}</span>
+                  </div>
+                  <div class="text-muted" style="font-size:0.75rem;">
+                    {{ item.pieces_per_serving }} pcs/serve | Base: ₹{{ item.price }} | Taxable: ₹{{ item.taxable_value }}
+                  </div>
+                  <div class="text-muted" style="font-size:0.75rem;">
+                    CGST ({{ item.cgst_rate }}%): ₹{{ item.cgst_amount }} | SGST ({{ item.sgst_rate }}%): ₹{{ item.sgst_amount }}
+                  </div>
+                </div>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+        </td>
+        <td>
+          {% with ledger=order.ledger_entries.first %}
+          <div class="small">
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted">Food Subtotal (Incl. GST):</span>
+              <span>₹{{ order.subtotal }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted">Total CGST:</span>
+              <span>₹{{ order.total_cgst }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted">Total SGST:</span>
+              <span>₹{{ order.total_sgst }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-1 mt-1 border-top pt-1">
+              <span class="text-muted">Total Amount:</span>
+              <span>₹{{ order.total_amount }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-1 mt-1 border-top pt-1">
+              <span class="text-danger">Platform Commission (10%):</span>
+              <span>-₹{{ ledger.platform_commission|default:"0.00" }}</span>
+            </div>
+            <div class="d-flex justify-content-between fw-bold border-top pt-1 mt-1">
+              <span class="text-success">Net Earnings (90%):</span>
+              <span class="text-success">₹{{ ledger.restaurant_earnings|default:"0.00" }}</span>
+            </div>
+          </div>
+          {% endwith %}
+        </td>
+        <td>
+          <span class="badge 
+            {% if order.status == 'delivered' %}bg-success
+            {% elif order.status == 'rejected' or order.status == 'cancelled' %}bg-danger
+            {% elif order.status == 'paid' %}bg-primary
+            {% else %}bg-warning text-dark{% endif %}">
+            {{ order.get_status_display }}
+          </span>
+          {% if order.delivery_partner %}
+            <div class="mt-2 small text-muted">
+              <i class="fa fa-motorcycle me-1"></i> Partner assigned
+            </div>
+          {% endif %}
+        </td>
+        
+        {% if action or reject %}
+        <td>
+          <div class="d-flex flex-column gap-2">
+            {% if action %}
+              {% if status_filter == 'paid' %}
+              <form action="{% url 'base:update_order_status' order.id %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="accepted">
+                <button type="submit" class="btn btn-sm btn-success w-100">Accept Order</button>
+              </form>
+              {% else %}
+              <form action="{% url 'base:update_order_status' order.id %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="{{ next_status }}">
+                <button type="submit" class="btn btn-sm btn-primary w-100">{{ action }}</button>
+              </form>
+              {% endif %}
+            {% endif %}
+            
+            {% if reject %}
+              <form action="{% url 'base:update_order_status' order.id %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="rejected">
+                <button type="submit" class="btn btn-sm btn-outline-danger w-100" onclick="return confirm('Are you sure you want to reject this order? This will refund the customer.')">Reject</button>
+              </form>
+            {% endif %}
+            
+            <a href="{% url 'base:order_detail' order.id %}" class="btn btn-sm btn-outline-secondary w-100 mt-2">View Details</a>
+            {% if order.status in 'paid,accepted,preparing,ready,out_for_delivery,delivered' %}
+            <div class="d-flex gap-1 mt-2">
+                <a href="{% url 'base:invoice' order.id %}" target="_blank" class="btn btn-sm btn-outline-orange w-50" title="View Invoice"><i class="fa fa-file-invoice"></i></a>
+                <a href="{% url 'base:invoice' order.id %}?download=true" class="btn btn-sm btn-outline-secondary w-50" title="Download PDF"><i class="fa fa-download"></i></a>
+            </div>
+            {% endif %}
+          </div>
+        </td>
+        {% endif %}
+      </tr>
+      {% endif %}
+      {% empty %}
+      <tr>
+        <td colspan="7" class="text-center py-4 text-muted">
+          <i class="fa-solid fa-inbox fa-3x mb-3 text-light"></i>
+          <p class="mb-0">No orders found.</p>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

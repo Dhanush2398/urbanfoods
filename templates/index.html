@@ -12,11 +12,11 @@
                     </h1>
                     <p class="lead text-muted mb-4">Order from your favorite restaurants and get your food delivered hot and fresh in under 30 minutes.</p>
                     
-                    <div class="search-bar-glass w-100 mb-3 animate-fade-up delay-100">
-                        <i class="fa-solid fa-location-dot text-orange ms-3 fs-5"></i>
-                        <input type="text" class="w-100" placeholder="Enter your delivery address">
-                        <button class="btn btn-primary-qb btn-search">Find Food</button>
-                    </div>
+                    <form action="{% url 'base:restaurants' %}" method="GET" class="search-bar-glass w-100 mb-3 animate-fade-up delay-100 d-flex align-items-center bg-white p-2 rounded-pill shadow-sm">
+                        <i class="fa-solid fa-utensils text-orange ms-3 fs-5"></i>
+                        <input type="text" name="q" class="w-100 border-0 ms-2 bg-transparent focus-ring-none" placeholder="Search for restaurants or food..." style="outline: none;">
+                        <button type="submit" class="btn btn-primary-qb btn-search rounded-pill px-4">Search</button>
+                    </form>
 
                     <div class="d-flex align-items-center gap-3 animate-fade-up delay-200">
                         <p class="mb-0 fw-semibold">Popular:</p>

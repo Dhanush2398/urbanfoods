@@ -1,0 +1,137 @@
+{% extends "restaurant/base.html" %}
+{% block title %}Wallet - Urban Foods{% endblock %}
+
+{% block content %}
+<div class="content-body">
+<div class="container-fluid">
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-navy mb-0">Wallet</h3>
+    
+</div>
+
+<!-- Earnings Overview -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 h-100 rounded-4">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Total Food Sales</h6>
+                <h3 class="fw-bold text-success mb-0">₹{{ earnings.total_eligible_sales }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 h-100 rounded-4">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Platform Commission</h6>
+                <h3 class="fw-bold text-danger mb-0">-₹{{ earnings.total_commission_deducted }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 h-100 rounded-4 bg-light">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Net Earnings</h6>
+                <h3 class="fw-bold mb-0">₹{{ earnings.net_earnings }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 h-100 rounded-4 border-start border-4 border-warning">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Pending Balance</h6>
+                <h3 class="fw-bold text-warning mb-0">₹{{ earnings.pending_balance }}</h3>
+                <small class="text-muted">Clears when delivered</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 h-100 rounded-4 border-start border-4 border-success">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Available to Withdraw</h6>
+                <h2 class="fw-bold text-success mb-0">₹{{ earnings.available_balance }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 h-100 rounded-4 border-start border-4 border-info">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Reserved (Pending Requests)</h6>
+                <h2 class="fw-bold text-info mb-0">₹{{ earnings.reserved_balance }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 h-100 rounded-4 border-start border-4 border-primary">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Total Withdrawn</h6>
+                <h2 class="fw-bold text-primary mb-0">₹{{ earnings.withdrawn_balance }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Wallet Transactions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-white pt-4 pb-3 border-0">
+                <h5 class="fw-bold mb-0">Wallet Transactions</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Date</th>
+                                <th>Ref</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in transactions %}
+                            <tr>
+                                <td class="ps-4">{{ t.created_at|date:"M d, Y h:i A" }}</td>
+                                <td>{{ t.reference }}</td>
+                                <td>
+                                    {% if t.transaction_type == 'order_payment' %}
+                                    Order #{{ t.order.id }} Payout
+                                    {% else %}
+                                    {{ t.get_transaction_type_display }}
+                                    {% endif %}
+                                </td>
+                                <td class="fw-bold {% if t.direction == 'credit' %}text-success{% else %}text-danger{% endif %}">
+                                    {% if t.direction == 'credit' %}+{% else %}-{% endif %}₹{{ t.amount }}
+                                </td>
+                                <td>
+                                    <span class="badge {% if t.direction == 'credit' %}bg-success-subtle text-success border border-success-subtle{% else %}bg-danger-subtle text-danger border border-danger-subtle{% endif %}">
+                                        {{ t.direction|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if t.status == 'completed' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                        {{ t.status|title }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">No wallet transactions found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+{% endblock %}
+

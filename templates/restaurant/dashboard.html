@@ -30,14 +30,75 @@
         </a>
       </div>
       <div class="col-xl-3 col-sm-6"><div class="card"><div class="card-body">
-        <span class="font-w500 fs-16 d-block mb-2">Total Orders</span><h2>0</h2>
+        <span class="font-w500 fs-16 d-block mb-2">Total Orders</span><h2>{{ total_orders }}</h2>
       </div></div></div>
       <div class="col-xl-3 col-sm-6"><div class="card"><div class="card-body">
-        <span class="font-w500 fs-16 d-block mb-2">Today's Revenue</span><h2>₹0</h2>
+        <span class="font-w500 fs-16 d-block mb-2">Today's Revenue</span><h2>₹{{ today_revenue }}</h2>
       </div></div></div>
       <div class="col-xl-3 col-sm-6"><div class="card"><div class="card-body">
-        <span class="font-w500 fs-16 d-block mb-2">Customers</span><h2>0</h2>
+        <span class="font-w500 fs-16 d-block mb-2">Pending Balance</span><h2>₹{{ earnings.pending_balance|default:"0.00" }}</h2>
       </div></div></div>
+    </div>
+
+    <!-- Orders Management Section -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header border-0 pb-0">
+            <h4 class="card-title">Order Management</h4>
+          </div>
+          <div class="card-body">
+            
+            <!-- Tabs -->
+            <ul class="nav nav-pills mb-4" id="orderTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="new-orders-tab" data-bs-toggle="pill" data-bs-target="#new-orders" type="button" role="tab">New Orders</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="accepted-tab" data-bs-toggle="pill" data-bs-target="#accepted" type="button" role="tab">Accepted</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="preparing-tab" data-bs-toggle="pill" data-bs-target="#preparing" type="button" role="tab">Preparing</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="ready-tab" data-bs-toggle="pill" data-bs-target="#ready" type="button" role="tab">Ready for Pickup</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="history-tab" data-bs-toggle="pill" data-bs-target="#history" type="button" role="tab">History</button>
+              </li>
+            </ul>
+
+            <div class="tab-content" id="orderTabsContent">
+              <!-- New Orders -->
+              <div class="tab-pane fade show active" id="new-orders" role="tabpanel">
+                {% include "restaurant/includes/order_cards.html" with orders=orders status_filter="paid" action="Accept" reject="True" %}
+              </div>
+              
+              <!-- Accepted -->
+              <div class="tab-pane fade" id="accepted" role="tabpanel">
+                {% include "restaurant/includes/order_cards.html" with orders=orders status_filter="accepted" action="Start Preparing" next_status="preparing" %}
+              </div>
+              
+              <!-- Preparing -->
+              <div class="tab-pane fade" id="preparing" role="tabpanel">
+                {% include "restaurant/includes/order_cards.html" with orders=orders status_filter="preparing" action="Mark Ready for Pickup" next_status="ready" %}
+              </div>
+
+              <!-- Ready -->
+              <div class="tab-pane fade" id="ready" role="tabpanel">
+                {% include "restaurant/includes/order_cards.html" with orders=orders status_filter="ready" %}
+                <div class="alert alert-info mt-3"><i class="fa fa-info-circle me-2"></i>Waiting for delivery partner to pick up the orders.</div>
+              </div>
+
+              <!-- History (Out for Delivery, Delivered, Rejected, Cancelled) -->
+              <div class="tab-pane fade" id="history" role="tabpanel">
+                {% include "restaurant/includes/order_list.html" with orders=orders status_filter="history" %}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
     </div>
 
   </div>

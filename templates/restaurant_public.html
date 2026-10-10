@@ -32,11 +32,21 @@
               <div class="rounded-3 bg-light d-flex align-items-center justify-content-center text-muted" style="width:70px;height:70px"><i class="fa-solid fa-utensils"></i></div>
             {% endif %}
             <div class="me-auto">
-              <span class="badge {% if i.is_veg %}bg-success{% else %}bg-danger{% endif %} me-1">{% if i.is_veg %}Veg{% else %}Non-veg{% endif %}</span>
+              <span class="badge bg-success me-1"><i class="fa-solid fa-leaf"></i> Veg</span>
               <span class="fw-bold">{{ i.name }}</span>
+              <div class="mt-1">
+                {% if i.pieces_per_serving %}<span class="badge bg-light text-dark border me-1" style="font-size:0.75rem">{{ i.pieces_per_serving }} pcs</span>{% endif %}
+                {% if i.quantity_in_grams_or_ml %}<span class="badge bg-light text-dark border me-1" style="font-size:0.75rem">{{ i.quantity_in_grams_or_ml }} g/ml</span>{% endif %}
+              </div>
             </div>
-            <div class="fw-bold">₹{{ i.price }}</div>
-            <i class="fa-solid fa-chevron-right text-muted"></i>
+            <div class="text-end">
+              <div class="fw-bold">₹{{ i.price }}</div>
+              <small class="text-muted fw-normal" style="font-size:0.8rem">/ {{ i.serving_unit }}</small>
+              <div style="font-size: 0.7rem;" class="text-muted mt-1">
+                {% if i.tax_inclusive %}(Incl. GST){% else %}(+ GST){% endif %}
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-muted ms-2"></i>
           </div>
         </div>
       </a>

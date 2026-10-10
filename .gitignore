@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+db.sqlite3
+.env
+media/payout_qrs/
+debug_track.html

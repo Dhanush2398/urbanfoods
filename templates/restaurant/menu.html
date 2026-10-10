@@ -1,5 +1,57 @@
 {% extends "restaurant/base.html" %}
-{% block title %}Menu{% endblock %}
+{% block title %}Menu<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const priceInput = document.getElementById("id_price");
+    const cgstInput = document.getElementById("id_cgst_rate");
+    const sgstInput = document.getElementById("id_sgst_rate");
+    const taxInclusive = document.getElementById("id_tax_inclusive");
+    const previewBox = document.getElementById("live-tax-preview");
+    
+    function calculateTax() {
+        if (!priceInput) return;
+        const p = parseFloat(priceInput.value) || 0;
+        const cgstR = cgstInput ? (parseFloat(cgstInput.value) || 0) : 0;
+        const sgstR = sgstInput ? (parseFloat(sgstInput.value) || 0) : 0;
+        const inclusive = taxInclusive ? taxInclusive.checked : false;
+        
+        if (p <= 0 && cgstR <= 0 && sgstR <= 0) {
+            previewBox.style.display = "none";
+            return;
+        }
+        previewBox.style.display = "block";
+        
+        let base = p;
+        let cgstAmt = 0;
+        let sgstAmt = 0;
+        let finalPrice = p;
+        
+        if (inclusive) {
+            const taxFactor = 1 + (cgstR + sgstR) / 100;
+            base = p / taxFactor;
+            cgstAmt = base * (cgstR / 100);
+            sgstAmt = base * (sgstR / 100);
+            finalPrice = p;
+        } else {
+            cgstAmt = p * (cgstR / 100);
+            sgstAmt = p * (sgstR / 100);
+            finalPrice = p + cgstAmt + sgstAmt;
+        }
+        
+        document.getElementById("preview-base").textContent = base.toFixed(2);
+        document.getElementById("preview-cgst").textContent = cgstAmt.toFixed(2);
+        document.getElementById("preview-sgst").textContent = sgstAmt.toFixed(2);
+        document.getElementById("preview-total").textContent = finalPrice.toFixed(2);
+    }
+    
+    if (priceInput) priceInput.addEventListener("input", calculateTax);
+    if (cgstInput) cgstInput.addEventListener("input", calculateTax);
+    if (sgstInput) sgstInput.addEventListener("input", calculateTax);
+    if (taxInclusive) taxInclusive.addEventListener("change", calculateTax);
+    
+    setTimeout(calculateTax, 500);
+});
+</script>
+{% endblock %}
 {% block content %}
 <div class="content-body">
   <div class="container-fluid">
@@ -18,11 +70,12 @@
           {% csrf_token %}
           <div class="row">
             {% for f in form %}
-              {% if f.name == "is_veg" or f.name == "is_available" %}
+              {% if f.name == "is_available" or f.name == "tax_inclusive" %}
               <div class="col-md-3 mb-3">
                 <div class="form-check mt-md-4">
                   {{ f }}
                   <label class="form-check-label" for="{{ f.id_for_label }}">{{ f.label }}</label>
+                  {% if f.help_text %}<small class="form-text text-muted d-block">{{ f.help_text }}</small>{% endif %}
                 </div>
               </div>
               {% elif f.name == "categories" %}
@@ -51,10 +104,18 @@
                 {% if f.name == "image" and editing and editing.image %}
                   <img src="{{ editing.image.url }}" alt="" width="70" height="70" class="rounded mt-2" style="object-fit:cover">
                 {% endif %}
+                {% if f.help_text %}<small class="form-text text-muted d-block">{{ f.help_text }}</small>{% endif %}
                 {% for e in f.errors %}<small class="text-danger d-block">{{ e }}</small>{% endfor %}
               </div>
               {% endif %}
             {% endfor %}
+          </div>
+                    <div id="live-tax-preview" class="alert alert-info py-2 mb-3" style="display:none;">
+              <strong>Live Pricing Preview:</strong><br>
+              Base Price: ₹<span id="preview-base">0.00</span><br>
+              CGST: ₹<span id="preview-cgst">0.00</span><br>
+              SGST: ₹<span id="preview-sgst">0.00</span><br>
+              <strong>Final Price: ₹<span id="preview-total">0.00</span></strong>
           </div>
           <button class="btn btn-primary">{% if editing %}Update Item{% else %}Add Item{% endif %}</button>
           {% if editing %}<a href="{% url 'base:restaurant_menu' %}" class="btn btn-outline-secondary">Cancel</a>{% endif %}
@@ -70,7 +131,7 @@
       <div class="card-body pt-0 table-responsive">
         <table class="table align-middle">
           <thead>
-            <tr><th>Item</th><th>Categories</th><th>Price</th><th>Type</th><th>Status</th><th>Action</th></tr>
+            <tr><th>Item</th><th>Categories</th><th>Price</th><th>Serving Details</th><th>Status</th><th>Action</th></tr>
           </thead>
           <tbody>
           {% for i in items %}
@@ -91,7 +152,11 @@
                 {% endfor %}
               </td>
               <td>₹{{ i.price }}</td>
-              <td><span class="badge {% if i.is_veg %}bg-success{% else %}bg-danger{% endif %}">{% if i.is_veg %}Veg{% else %}Non-veg{% endif %}</span></td>
+              <td>
+                <span class="d-block">1 {{ i.serving_unit }}</span>
+                {% if i.pieces_per_serving %}<small class="text-muted d-block">{{ i.pieces_per_serving }} pcs</small>{% endif %}
+                {% if i.quantity_in_grams_or_ml %}<small class="text-muted d-block">{{ i.quantity_in_grams_or_ml }} g/ml</small>{% endif %}
+              </td>
               <td><span class="badge {% if i.is_available %}bg-success{% else %}bg-secondary{% endif %}">{% if i.is_available %}Available{% else %}Unavailable{% endif %}</span></td>
               <td>
                 <div class="d-flex gap-2">
@@ -113,4 +178,56 @@
 
   </div>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const priceInput = document.getElementById("id_price");
+    const cgstInput = document.getElementById("id_cgst_rate");
+    const sgstInput = document.getElementById("id_sgst_rate");
+    const taxInclusive = document.getElementById("id_tax_inclusive");
+    const previewBox = document.getElementById("live-tax-preview");
+    
+    function calculateTax() {
+        if (!priceInput) return;
+        const p = parseFloat(priceInput.value) || 0;
+        const cgstR = cgstInput ? (parseFloat(cgstInput.value) || 0) : 0;
+        const sgstR = sgstInput ? (parseFloat(sgstInput.value) || 0) : 0;
+        const inclusive = taxInclusive ? taxInclusive.checked : false;
+        
+        if (p <= 0 && cgstR <= 0 && sgstR <= 0) {
+            previewBox.style.display = "none";
+            return;
+        }
+        previewBox.style.display = "block";
+        
+        let base = p;
+        let cgstAmt = 0;
+        let sgstAmt = 0;
+        let finalPrice = p;
+        
+        if (inclusive) {
+            const taxFactor = 1 + (cgstR + sgstR) / 100;
+            base = p / taxFactor;
+            cgstAmt = base * (cgstR / 100);
+            sgstAmt = base * (sgstR / 100);
+            finalPrice = p;
+        } else {
+            cgstAmt = p * (cgstR / 100);
+            sgstAmt = p * (sgstR / 100);
+            finalPrice = p + cgstAmt + sgstAmt;
+        }
+        
+        document.getElementById("preview-base").textContent = base.toFixed(2);
+        document.getElementById("preview-cgst").textContent = cgstAmt.toFixed(2);
+        document.getElementById("preview-sgst").textContent = sgstAmt.toFixed(2);
+        document.getElementById("preview-total").textContent = finalPrice.toFixed(2);
+    }
+    
+    if (priceInput) priceInput.addEventListener("input", calculateTax);
+    if (cgstInput) cgstInput.addEventListener("input", calculateTax);
+    if (sgstInput) sgstInput.addEventListener("input", calculateTax);
+    if (taxInclusive) taxInclusive.addEventListener("change", calculateTax);
+    
+    setTimeout(calculateTax, 500);
+});
+</script>
 {% endblock %}

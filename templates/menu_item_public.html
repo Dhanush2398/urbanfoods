@@ -18,14 +18,25 @@
         </div>
         <div class="col-md-7">
           <div class="card-body p-4">
-            <span class="badge {% if i.is_veg %}bg-success{% else %}bg-danger{% endif %} mb-2">{% if i.is_veg %}Veg{% else %}Non-veg{% endif %}</span>
+            <span class="badge bg-success mb-2"><i class="fa-solid fa-leaf"></i> Pure Veg</span>
             <h2 class="fw-bold mb-2">{{ i.name }}</h2>
-            <h3 class="text-orange mb-3">₹{{ i.price }}</h3>
+            <h3 class="text-orange mb-2">₹{{ i.price }} <span class="text-muted fs-5 fw-normal">/ {{ i.serving_unit }}</span></h3>
+            <div style="font-size: 0.9rem;" class="text-muted mb-2">
+              {% if i.tax_inclusive %}(Price includes GST){% else %}(+ GST calculated at checkout){% endif %}
+            </div>
+            <div class="mb-3 d-flex gap-2 flex-wrap">
+              {% if i.pieces_per_serving %}<span class="badge bg-light text-dark border">{{ i.pieces_per_serving }} Pieces</span>{% endif %}
+              {% if i.quantity_in_grams_or_ml %}<span class="badge bg-light text-dark border">{{ i.quantity_in_grams_or_ml }} Grams/ML</span>{% endif %}
+            </div>
             <p class="text-muted">{{ i.description|default:"No description added." }}</p>
             <hr>
             <p class="mb-1"><strong>Category:</strong> {{ i.category }}</p>
             <p class="mb-1"><strong>Restaurant:</strong> {{ r.restaurant_name }}</p>
             <p class="mb-0"><strong>Location:</strong> {{ r.address }}, {{ r.city }}</p>
+            <form action="{% url 'base:add_to_cart' i.pk %}" method="post" class="mt-4">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary-qb px-4 py-2 w-100 shadow-sm fw-bold"><i class="fa-solid fa-cart-plus me-1"></i> Add to Cart</button>
+            </form>
           </div>
         </div>
       </div>
